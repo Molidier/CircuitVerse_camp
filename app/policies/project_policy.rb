@@ -26,6 +26,17 @@ class ProjectPolicy < ApplicationPolicy
       Collaboration.exists?(project_id: project.id, user_id: user.id)
   end
 
+  # Student privacy guarantee
+  # Assignment projects are always Private (enforced by Project#check_validity).
+  # For a Private project a viewer must be:
+  #   1. The author (owner of the circuit)
+  #   2. A mentor of the assignment's group (primary_mentor OR mentor group_member)
+  #   3. A collaborator explicitly added to this project
+  #   4. An admin
+  #
+  # Ordinary student group members are NOT in the list above, so a student
+  # cannot view another student's assignment circuit through any web or API route
+  # that calls authorize(@project, :check_view_access?).
   def check_view_access?
     project.project_access_type != "Private" ||
       (!user.nil? && project.author_id == user.id) ||

@@ -7,6 +7,7 @@ class ProjectsController < ApplicationController
 
   before_action :set_project, only: %i[show edit update destroy create_fork change_stars]
   before_action :authenticate_user!, only: %i[edit update destroy create_fork change_stars]
+  before_action :redirect_submitted_project_author, only: %i[edit update]
 
   before_action :check_access, only: %i[edit update destroy]
   before_action :check_delete_access, only: [:destroy]
@@ -140,6 +141,14 @@ class ProjectsController < ApplicationController
       authorize @project, :view_access?
     end
 
+    def redirect_submitted_project_author
+      return unless @project.project_submission? && @project.author_id == current_user.id
+
+      redirect_to user_project_path(@project.author, @project),
+                  alert: t("projects.submitted_cannot_edit")
+      return
+    end
+
     # Never trust parameters from the scary internet, only allow the white list through.
     def project_params
       params.expect(project: %i[name project_access_type description tag_list tags])
@@ -155,7 +164,7 @@ class ProjectsController < ApplicationController
     end
 
     def set_name_project_datum(project_params)
-      return unless @project.project_datum
+      return unless @project.project_datum&.data.present?
 
       datum_data = JSON.parse(@project.project_datum.data)
       datum_data["name"] = project_params["name"]

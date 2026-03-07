@@ -12,6 +12,7 @@ en:
       public: "Public"
       private: "Private"
       limited_access: "Limited access"
+    submitted_cannot_edit: "This assignment has been submitted. You cannot edit it anymore."
     edit:
       title: "%{name} - Edit Project"
       main_heading: "Edit Project"

@@ -3,6 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Project, type: :model do
+  include ActiveSupport::Testing::TimeHelpers
   before do
     @user = FactoryBot.create(:user)
     group = FactoryBot.create(:group, primary_mentor: @user)
@@ -102,6 +103,65 @@ RSpec.describe Project, type: :model do
           @project.project_access_type = "Private"
           @project.save
         end.to change(FeaturedCircuit, :count).by(-1)
+      end
+    end
+  end
+
+  describe "#submission_status" do
+    let(:project) { FactoryBot.create(:project, assignment: @assignment, author: @user) }
+
+    context "when no grade and not submitted" do
+      it "returns :started" do
+        expect(project.submission_status).to eq(:started)
+      end
+    end
+
+    context "when project_submission is true but no grade" do
+      before { project.update_columns(project_submission: true) }
+
+      it "returns :submitted" do
+        expect(project.submission_status).to eq(:submitted)
+      end
+    end
+
+    context "when a grade exists" do
+      before do
+        # assignment must have a grading scale for Grade validation to pass
+        graded_assignment = FactoryBot.create(:assignment,
+                                              group: FactoryBot.create(:group, primary_mentor: @user),
+                                              grading_scale: :custom)
+        graded_project = FactoryBot.create(:project, assignment: graded_assignment, author: @user)
+        graded_project.update_columns(project_submission: true)
+        FactoryBot.create(:grade, project: graded_project, assignment: graded_assignment,
+                                  grader: @user, grade: "A+")
+        @graded_project = graded_project
+      end
+
+      it "returns :graded" do
+        expect(@graded_project.reload.submission_status).to eq(:graded)
+      end
+    end
+  end
+
+  describe "submitted_at callback" do
+    let(:project) { FactoryBot.create(:project, assignment: @assignment, author: @user) }
+
+    it "is nil before submission" do
+      expect(project.submitted_at).to be_nil
+    end
+
+    it "is stamped when project_submission flips to true" do
+      expect {
+        project.update!(project_submission: true)
+      }.to change { project.reload.submitted_at }.from(nil)
+    end
+
+    it "is not overwritten on subsequent saves" do
+      project.update!(project_submission: true)
+      original_time = project.submitted_at
+      travel_to 1.hour.from_now do
+        project.update!(description: "updated")
+        expect(project.reload.submitted_at).to be_within(1.second).of(original_time)
       end
     end
   end

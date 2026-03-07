@@ -31,4 +31,27 @@ describe UserPolicy do
       it { is_expected.not_to permit(:groups) }
     end
   end
+
+  describe "#dashboard" do
+    context "user is same as requested_user" do
+      let(:user)           { @user }
+      let(:requested_user) { @user }
+
+      it { is_expected.to permit(:dashboard) }
+    end
+
+    context "user is an admin viewing another user's dashboard" do
+      let(:user)           { FactoryBot.create(:user, admin: true) }
+      let(:requested_user) { @user }
+
+      it { is_expected.to permit(:dashboard) }
+    end
+
+    context "user is a different non-admin user" do
+      let(:user)           { FactoryBot.create(:user) }
+      let(:requested_user) { @user }
+
+      it { is_expected.not_to permit(:dashboard) }
+    end
+  end
 end

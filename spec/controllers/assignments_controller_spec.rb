@@ -3,6 +3,7 @@
 require "rails_helper"
 
 describe AssignmentsController, type: :request do
+  include ActiveSupport::Testing::TimeHelpers
   before do
     @primary_mentor = FactoryBot.create(:user)
     @group = FactoryBot.create(:group, primary_mentor: @primary_mentor)
@@ -60,6 +61,44 @@ describe AssignmentsController, type: :request do
         expect(res.keys.sort).to eq(assignment_keys)
       end
     end
+
+    context "student does NOT see other students' submissions" do
+      before do
+        @other_student = FactoryBot.create(:user)
+        FactoryBot.create(:group_member, user: @other_student, group: @group)
+        FactoryBot.create(:project, assignment: @assignment, author: @other_student)
+      end
+
+      it "does not include submissions panel or other students' names" do
+        get group_assignment_path(@group, @assignment)
+        expect(response.body).not_to include("Student Progress")
+        expect(response.body).not_to include(@other_student.name)
+      end
+    end
+
+    context "teacher sees the progress dashboard" do
+      before do
+        sign_in @primary_mentor
+        @student1 = FactoryBot.create(:user)
+        @student2 = FactoryBot.create(:user)
+        FactoryBot.create(:group_member, user: @student1, group: @group)
+        FactoryBot.create(:group_member, user: @student2, group: @group)
+        FactoryBot.create(:project, assignment: @assignment, author: @student1)
+      end
+
+      it "renders the progress dashboard with status badges" do
+        get group_assignment_path(@group, @assignment)
+        expect(response.body).to include("Student Progress")
+        expect(response.body).to include("Not Started")
+        expect(response.body).to include("Started")
+      end
+
+      it "shows all enrolled students regardless of whether they started" do
+        get group_assignment_path(@group, @assignment)
+        expect(response.body).to include(@student1.name)
+        expect(response.body).to include(@student2.name)
+      end
+    end
   end
 
   describe "#start" do
@@ -85,6 +124,14 @@ describe AssignmentsController, type: :request do
     it "starts a new project" do
       get assignment_start_path(@group, @assignment)
       expect(response.status).to eq(302)
+    end
+
+    it "records started_at on the created project" do
+      travel_to Time.current do
+        get assignment_start_path(@group, @assignment)
+        project = Project.find_by(author: @member, assignment: @assignment)
+        expect(project.started_at).to be_within(2.seconds).of(Time.current)
+      end
     end
   end
 

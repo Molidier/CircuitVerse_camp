@@ -9,7 +9,12 @@ class GradePolicy < ApplicationPolicy
   end
 
   def mentor?
-    grade.assignment&.group&.primary_mentor_id == user.id \
-    || grade.assignment&.group&.group_members&.exists?(user_id: user.id, mentor: true)
+    return false if grade.assignment.blank?
+
+    grade.assignment.groups.any? do |g|
+      g.primary_mentor_id == user.id ||
+        g.group_members.exists?(user_id: user.id, mentor: true) ||
+        g.group_members.exists?(user_id: user.id, ta: true)
+    end
   end
 end

@@ -78,6 +78,30 @@
     <p class="form-text text-muted"><%= t("assignments.form.allow_resubmit_hint") %></p>
   </div>
 
+  <% if defined?(@groups_for_assignment) && @groups_for_assignment.size > 1 && !@assignment.new_record? %>
+  <div id="groups-field" class="field mb-3">
+    <h6><%= t("assignments.form.also_assign_to_groups") %></h6>
+    <p class="form-text text-muted"><%= t("assignments.form.also_assign_to_groups_hint") %></p>
+    <% @groups_for_assignment.each do |g| %>
+      <div class="form-check">
+        <%= check_box_tag "assignment[group_ids][]", g.id, @assignment.group_ids.include?(g.id), id: "assignment_group_ids_#{g.id}", class: "form-check-input" %>
+        <%= label_tag "assignment_group_ids_#{g.id}", g.name, class: "form-check-label" %>
+      </div>
+    <% end %>
+  </div>
+  <% end %>
+
+  <% if defined?(@mentor_projects_for_template) %>
+  <div id="template-field" class="field mb-3">
+    <h6><%= form.label :template_project_id, t("assignments.form.template_circuit") %></h6>
+    <%= form.select :template_project_id,
+          options_for_select([[t("assignments.form.template_none"), nil]] + (@mentor_projects_for_template || []).map { |p| [p.name, p.id] }, @assignment.template_project_id),
+          {},
+          class: "form-control form-input" %>
+    <p class="form-text text-muted"><%= t("assignments.form.template_hint") %></p>
+  </div>
+  <% end %>
+
   <div id="rubric-field" class="field mb-3">
     <h6><%= t("assignments.form.rubric_heading") %></h6>
     <p class="form-text text-muted"><%= t("assignments.form.rubric_hint") %></p>

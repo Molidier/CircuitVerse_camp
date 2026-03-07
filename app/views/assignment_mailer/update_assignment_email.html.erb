@@ -3,8 +3,11 @@
   <%= inline_svg_tag "svgs/newAssignment.svg", alt: "New Assignment", class: "mailer-assignment-image" %>
   <p class="mailer-text">
     The assignment <span class="mailer-highlighted-text"><%= @assignment.name %> (<%= @assignment.deadline %>)</span> has been updated. <br>
-    Assignment is mentored by <span class="mailer-highlighted-text">@assignment.group.primary_mentor.name</span>
+    <% primary_mentors = @assignment.groups.map { |g| g.primary_mentor&.name }.compact.uniq %>
+    <% if primary_mentors.any? %>
+      Assignment is mentored by <span class="mailer-highlighted-text"><%= primary_mentors.join(", ") %></span>
+    <% end %>
   </p>
-  <a href="<%= group_assignment_url(@assignment.group, @assignment) %>" class="mailer-button">View Assignment</a>
+  <a href="<%= group_assignment_url(@assignment.groups.first, @assignment) %>" class="mailer-button">View Assignment</a>
   <p class="mailer-text">Keep building!</p>
 </div>

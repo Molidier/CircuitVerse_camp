@@ -59,7 +59,7 @@ class LtiController < ApplicationController
 
     def set_group_and_assignment
       @assignment = Assignment.find_by(lti_consumer_key: params[:oauth_consumer_key])
-      @group = @assignment.group if @assignment.present?
+      @group = @assignment.groups.first if @assignment.present?
     end
 
     def set_lti_params

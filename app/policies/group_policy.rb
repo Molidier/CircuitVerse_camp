@@ -18,6 +18,8 @@ class GroupPolicy < ApplicationPolicy
   end
 
   def mentor_access?
-    @admin_access || @group.group_members.exists?(user_id: user.id, mentor: true)
+    @admin_access ||
+      @group.group_members.exists?(user_id: user.id, mentor: true) ||
+      @group.group_members.exists?(user_id: user.id, ta: true)
   end
 end

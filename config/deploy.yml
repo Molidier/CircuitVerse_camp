@@ -1,12 +1,13 @@
 service: circuitverse
-image: circuitverse/circuitverse
+# Set KAMAL_IMAGE (e.g. owner/repo lowercase) for your fork; defaults to upstream.
+image: <%= ENV["KAMAL_IMAGE"] || "circuitverse/circuitverse" %>
 servers:
   web:
     hosts:
       - <%= ENV["SERVER_IP"] %>
     cmd: ./bin/rails server -b 0.0.0.0 -p 3000
     labels:
-      traefik.http.routers.circuitverse-web.rule: Host(`staging.circuitverse.org`)
+      traefik.http.routers.circuitverse-web.rule: Host(`<%= ENV["TRAEFIK_HOST"] || "staging.circuitverse.org" %>`)
     options:
       "add-host": host.docker.internal:host-gateway
   sidekiq:
@@ -18,7 +19,8 @@ servers:
 
 registry:
   server: ghcr.io
-  username: circuitverse
+  # For your fork, set KAMAL_REGISTRY_USERNAME to your GitHub username (or org).
+  username: <%= ENV["KAMAL_REGISTRY_USERNAME"] || "circuitverse" %>
   password:
     - KAMAL_GHCR_REGISTRY_PASSWORD
 

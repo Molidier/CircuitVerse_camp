@@ -12,6 +12,24 @@ export default class extends Controller {
             $(e.currentTarget).find('#groups-member-demote-button').parent().attr('action',
                 `/group_members/${groupmember.toString()}`);
         });
+        $('#promote-to-ta-modal').on('show.bs.modal', (e) => {
+            const groupmember = $(e.relatedTarget).data('currentgroupmember');
+            $(e.currentTarget).find('#groups-member-promote-ta-button').parent().attr('action',
+                `/group_members/${groupmember.toString()}`);
+        });
+    }
+
+    addTaToGroup() {
+        $('#group_ta_emails').select2({
+            tags: true,
+            multiple: true,
+            tokenSeparators: [',', ' '],
+        });
+        $('.select2-selection input').attr('maxlength', '30');
+        this.toggleButtonBasedOnEmails('#group_ta_emails', '#add-ta-button');
+        $('#group_ta_emails').on('select2:select select2:unselect', () => {
+            this.toggleButtonBasedOnEmails('#group_ta_emails', '#add-ta-button');
+        });
     }
 
     toggleButtonBasedOnEmails(emailSelector, buttonSelector) {

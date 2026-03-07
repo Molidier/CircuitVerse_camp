@@ -24,7 +24,7 @@ We would love to hear from you! We communicate on Slack:
 We follow the [Code of Conduct](code-of-conduct.md) of the [CircuitVerse](https://circuitverse.org) Community.
 
 ## Setup
-See [`SETUP.md`](SETUP.md) for more information on setting up CircuitVerse.
+See [`SETUP.md`](SETUP.md) for more information on setting up CircuitVerse. To **deploy to your own server** (e.g. for students and teachers to use from anywhere), see **[DEPLOY.md](DEPLOY.md)**.
 
 ## Contributing
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for more information on contributing to CircuitVerse.

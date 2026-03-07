@@ -28,7 +28,9 @@ Rails.application.routes.draw do
   # resources :assignment_submissions
   resources :group_members, only: %i[create destroy update]
   resources :groups, except: %i[index] do
-    resources :assignments, except: %i[index]
+    resources :assignments, except: %i[index] do
+      resources :assignment_comments, only: %i[create], path: "comments"
+    end
     member do
       get "invite/:token", to: "groups#group_invite", as: "invite"
       put :generate_token
@@ -59,6 +61,7 @@ Rails.application.routes.draw do
 
   scope "/groups" do
     get "/:group_id/assignments/:id/reopen", to: "assignments#reopen", as: "reopen_group_assignment"
+    get "/:group_id/assignments/:id/duplicate", to: "assignments#duplicate", as: "duplicate_group_assignment"
     put "/:group_id/assignments/:id/close", to: "assignments#close", as: "close_group_assignment"
     get "/:group_id/assignments/:id/start", to: "assignments#start", as: "assignment_start"
   end
@@ -164,6 +167,8 @@ Rails.application.routes.draw do
       member do
         put :submit
         put :unsubmit
+        patch :record_time
+        post :record_time  # for sendBeacon from simulator (same action)
       end
     end
   end

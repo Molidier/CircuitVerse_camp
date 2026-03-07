@@ -56,7 +56,7 @@ class NotifyUser
     end
 
     def new_assignment_notification
-      Result.new("true", "new_assignment", @assignment.group, @assignment)
+      Result.new("true", "new_assignment", @assignment.groups.first, @assignment)
     end
 
     def forum_comment_notification

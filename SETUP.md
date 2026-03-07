@@ -75,6 +75,9 @@ RAILS_ENV=production bundle exec rake assets:precompile
 bundle exec sidekiq -e production -q default -q mailers -d -L tmp/sidekiq.log
 ```
 
+### Production deployment (Option B – Kamal)
+To deploy CircuitVerse to your own server so students and teachers can use it from anywhere (with data saved on your server), see **[DEPLOY.md](DEPLOY.md)** for the full Kamal-based deployment guide.
+
 ## Third Party Services
 The `.env` file only needs to be used if you would like to link to third party services (Facebook, Google, GitHub, Gitlab, Slack, Bugsnap and Recaptcha)
 

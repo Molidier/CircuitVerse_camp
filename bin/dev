@@ -16,7 +16,10 @@ if [[ "$DOCKER_ENVIRONMENT" == "true" && "$DEV_CONTAINER" != "true" ]]; then
   echo -e "  ${GREEN} bin/dev ${NO_COLOR} : to start the server again"
   echo -e "  ${GREEN} exit ${NO_COLOR} : to exit the container"
 else
-  # Local installation
+  # Local installation - ensure RVM gems are on PATH and GEM_PATH
+  export PATH="$HOME/.rvm/gems/ruby-3.2.1/bin:$HOME/.rvm/gems/ruby-3.2.1@global/bin:$HOME/.rvm/rubies/ruby-3.2.1/bin:$PATH"
+  export GEM_HOME="$HOME/.rvm/gems/ruby-3.2.1"
+  export GEM_PATH="$HOME/.rvm/gems/ruby-3.2.1:$HOME/.rvm/gems/ruby-3.2.1@global:$HOME/.rvm/rubies/ruby-3.2.1/lib/ruby/gems/3.2.0"
   if ! command -v foreman &>/dev/null; then
     echo "Installing foreman..."
     gem install foreman

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_25_150003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,13 +90,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "assignment_comments", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id", "created_at"], name: "index_assignment_comments_on_assignment_id_and_created_at"
+    t.index ["assignment_id"], name: "index_assignment_comments_on_assignment_id"
+    t.index ["user_id"], name: "index_assignment_comments_on_user_id"
+  end
+
+  create_table "assignment_groups", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "group_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id", "group_id"], name: "index_assignment_groups_on_assignment_id_and_group_id", unique: true
+    t.index ["assignment_id"], name: "index_assignment_groups_on_assignment_id"
+    t.index ["group_id"], name: "index_assignment_groups_on_group_id"
+  end
+
   create_table "assignments", force: :cascade do |t|
     t.string "name"
     t.datetime "deadline", null: false
     t.text "description"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "group_id"
     t.string "status"
     t.integer "grading_scale", default: 0
     t.boolean "grades_finalized", default: false
@@ -106,7 +126,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
     t.jsonb "feature_restrictions", default: {}
     t.boolean "allow_resubmit", default: false, null: false
     t.jsonb "rubric", default: [], null: false
-    t.index ["group_id"], name: "index_assignments_on_group_id"
+    t.bigint "template_project_id"
+    t.index ["template_project_id"], name: "index_assignments_on_template_project_id"
   end
 
   create_table "collaborations", force: :cascade do |t|
@@ -267,6 +288,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "mentor", default: false
+    t.boolean "ta", default: false, null: false
     t.index ["group_id", "user_id"], name: "index_group_members_on_group_id_and_user_id", unique: true
     t.index ["group_id"], name: "index_group_members_on_group_id"
     t.index ["user_id"], name: "index_group_members_on_user_id"
@@ -395,6 +417,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
     t.virtual "searchable", type: :tsvector, as: "(setweight(to_tsvector('english'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::\"char\") || setweight(to_tsvector('english'::regconfig, COALESCE(description, ''::text)), 'B'::\"char\"))", stored: true
     t.datetime "started_at"
     t.datetime "submitted_at"
+    t.integer "time_spent_seconds", default: 0, null: false
     t.index ["assignment_id"], name: "index_projects_on_assignment_id"
     t.index ["author_id"], name: "index_projects_on_author_id"
     t.index ["forked_project_id"], name: "index_projects_on_forked_project_id"
@@ -532,7 +555,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "assignments", "groups"
+  add_foreign_key "assignment_comments", "assignments"
+  add_foreign_key "assignment_comments", "users"
+  add_foreign_key "assignment_groups", "assignments"
+  add_foreign_key "assignment_groups", "groups"
+  add_foreign_key "assignments", "projects", column: "template_project_id"
   add_foreign_key "collaborations", "projects"
   add_foreign_key "collaborations", "users"
   add_foreign_key "commontator_comments", "commontator_comments", column: "parent_id", on_update: :restrict, on_delete: :cascade

@@ -20,7 +20,7 @@
       <div class="col-12 col-sm-12 col-md-12 col-lg-12">
         <div class="assignments-data">
           <p><%= t("assignments.assignment_data.name_html", name: @assignment.name) %></p>
-          <p><%= t("assignments.assignment_data.group_html", group_name: @assignment.group.name) %></p>
+          <p><%= t("assignments.assignment_data.groups_html", group_names: @assignment.groups.map(&:name).join(", ")) %></p>
           <p><strong><%= t("assignments.deadline") %>&nbsp;</strong><span class="assignments-deadline" data-year=<%= deadline_year(@assignment) %>
             data-month=<%= deadline_month(@assignment) %> data-day=<%= deadline_day(@assignment) %>
             data-hour=<%= deadline_hour(@assignment) %> data-minute=<%= deadline_minute(@assignment) %>
@@ -41,11 +41,18 @@
           <% if @assignment.restricted_features != "None" %>
           <p><%= t("assignments.assignment_data.restricted_features_html", restricted_features: @assignment.restricted_features) %></p>
         <% end %>
-          <% if policy(@assignment).admin_access? && @assignment.status!="closed" %>
+          <% if policy(@assignment).admin_access? && @assignment.status != "closed" %>
             <br>
             <%= link_to edit_group_assignment_path(@group, @assignment), class: "mini-button groups-reopen-mini-button" do %>
               <%= image_tag("svgs/editGroup.svg", alt: "Edit Assignment") %>
               <span><%= t("edit") %></span>
+            <% end %>
+          <% end %>
+          <% if policy(@assignment).mentor_access? %>
+            &nbsp;
+            <%= link_to duplicate_group_assignment_path(@group, @assignment), class: "mini-button groups-reopen-mini-button", data: { turbo_method: :get } do %>
+              <%= image_tag("svgs/viewGroup.svg", alt: "Duplicate") %>
+              <span><%= t("assignments.duplicate.button") %></span>
             <% end %>
           <% end %>
           <% if policy(@assignment).can_be_graded? %>
@@ -63,11 +70,30 @@
           <br> <br>
           <hr class="assignments-horizontal-rule">
 
+          <%# Per-assignment comments (mentors only) %>
+          <% if policy(@assignment).mentor_access? %>
+            <h3 class="assignments-submission-heading"><%= t("assignment_comments.heading") %></h3>
+            <%= form_with url: group_assignment_assignment_comments_path(@group, @assignment), method: :post, local: true, scope: "assignment_comment", class: "mb-3" do |f| %>
+              <%= f.text_area :body, rows: 3, class: "form-control form-input", placeholder: t("assignment_comments.placeholder"), required: true %>
+              <%= f.submit t("assignment_comments.add"), class: "btn primary-button mt-2" %>
+            <% end %>
+            <div class="assignment-comments-list mb-4">
+              <% raw_assignment = @assignment.is_a?(AssignmentDecorator) ? @assignment.assignment : @assignment %>
+              <% raw_assignment.assignment_comments.includes(:user).order(created_at: :desc).each do |comment| %>
+                <div class="assignment-comment-item border-bottom pb-2 mb-2">
+                  <small class="text-muted"><%= comment.user.name %> · <%= l(comment.created_at, format: :short) %></small>
+                  <div class="assignment-comment-body"><%= simple_format(comment.body) %></div>
+                </div>
+              <% end %>
+            </div>
+            <hr class="assignments-horizontal-rule">
+          <% end %>
+
           <%# ── Teacher progress dashboard ───────────────────────────── %>
           <% if policy(@assignment).mentor_access? && @students.present? %>
             <h3 class="assignments-submission-heading">Student Progress</h3>
 
-            <%# Summary counters %>
+            <%# Summary counters for chart and badges %>
             <% counts = { not_started: 0, started: 0, submitted: 0, graded: 0 } %>
             <% @students.each do |student| %>
               <% proj = @student_projects[student.id] %>
@@ -75,24 +101,83 @@
               <% counts[status] += 1 %>
             <% end %>
 
-            <div class="progress-summary-row">
-              <div class="progress-counter progress-counter--not-started">
-                <span class="progress-counter__number"><%= counts[:not_started] %></span>
-                <span class="progress-counter__label">Not Started</span>
+            <%# Progress & Analytics charts (Chart.js) %>
+            <% raw_assignment = @assignment.is_a?(AssignmentDecorator) ? @assignment.assignment : @assignment %>
+            <div class="progress-analytics-charts row mb-4">
+              <div class="col-12 col-md-6 mb-3">
+                <h6 class="assignments-submission-heading mb-2"><%= t("assignments.analytics.status_distribution") %></h6>
+                <div class="chart-container" style="position: relative; height: 220px;">
+                  <canvas id="assignmentStatusChart" aria-label="<%= t("assignments.analytics.status_distribution") %>"></canvas>
+                </div>
               </div>
-              <div class="progress-counter progress-counter--started">
-                <span class="progress-counter__number"><%= counts[:started] %></span>
-                <span class="progress-counter__label">In Progress</span>
-              </div>
-              <div class="progress-counter progress-counter--submitted">
-                <span class="progress-counter__number"><%= counts[:submitted] %></span>
-                <span class="progress-counter__label">Submitted</span>
-              </div>
-              <div class="progress-counter progress-counter--graded">
-                <span class="progress-counter__number"><%= counts[:graded] %></span>
-                <span class="progress-counter__label">Graded</span>
-              </div>
+              <% grade_values = @student_projects.values.filter_map { |p| p&.grade&.grade.to_s.to_i }.select { |g| g >= 0 && g <= 100 } %>
+              <% if raw_assignment.grading_scale == "percent" && grade_values.any? %>
+                <div class="col-12 col-md-6 mb-3">
+                  <h6 class="assignments-submission-heading mb-2"><%= t("assignments.analytics.grade_distribution") %></h6>
+                  <div class="chart-container" style="position: relative; height: 220px;">
+                    <canvas id="assignmentGradeChart" aria-label="<%= t("assignments.analytics.grade_distribution") %>"></canvas>
+                  </div>
+                </div>
+              <% end %>
             </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+            <script>
+              (function() {
+                var statusCtx = document.getElementById('assignmentStatusChart');
+                if (statusCtx) {
+                  new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                      labels: ['<%= t("assignments.analytics.not_started") %>', '<%= t("assignments.analytics.in_progress") %>', '<%= t("assignments.analytics.submitted") %>', '<%= t("assignments.analytics.graded") %>'],
+                      datasets: [{
+                        data: [<%= counts[:not_started] %>, <%= counts[:started] %>, <%= counts[:submitted] %>, <%= counts[:graded] %>],
+                        backgroundColor: ['#6c757d', '#ffc107', '#0d6efd', '#198754'],
+                        borderWidth: 1
+                      }]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { position: 'bottom' } }
+                    }
+                  });
+                }
+                <% if raw_assignment.grading_scale == "percent" && grade_values.any? %>
+                var gradeCtx = document.getElementById('assignmentGradeChart');
+                if (gradeCtx) {
+                  var buckets = [0,0,0,0,0]; // 0-20, 21-40, 41-60, 61-80, 81-100
+                  <% grade_values.each do |g| %>
+                    if (<%= g %> <= 20) buckets[0]++;
+                    else if (<%= g %> <= 40) buckets[1]++;
+                    else if (<%= g %> <= 60) buckets[2]++;
+                    else if (<%= g %> <= 80) buckets[3]++;
+                    else buckets[4]++;
+                  <% end %>
+                  new Chart(gradeCtx, {
+                    type: 'bar',
+                    data: {
+                      labels: ['0-20', '21-40', '41-60', '61-80', '81-100'],
+                      datasets: [{
+                        label: '<%= t("assignments.analytics.students") %>',
+                        data: buckets,
+                        backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 1
+                      }]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                      },
+                      plugins: { legend: { display: false } }
+                    }
+                  });
+                }
+                <% end %>
+              })();
+            </script>
 
             <div class="progress-table-wrapper">
               <table class="table table-borderless progress-table">
@@ -102,6 +187,7 @@
                     <th>Status</th>
                     <th>Started</th>
                     <th>Submitted</th>
+                    <th><%= t("assignments.analytics.time_spent") %></th>
                     <th>Grade</th>
                   </tr>
                 </thead>
@@ -115,12 +201,18 @@
                         <span class="progress-badge progress-badge--<%= status %>">
                           <%= status.to_s.tr("_", " ").capitalize %>
                         </span>
+                        <% if proj&.late_submission?(raw_assignment) %>
+                          <span class="progress-badge progress-badge--late ms-1" title="<%= t("assignments.analytics.late_tooltip") %>"><%= t("assignments.analytics.late") %></span>
+                        <% end %>
                       </td>
                       <td class="progress-table__time">
                         <%= proj&.started_at&.strftime("%b %d, %H:%M") || "—" %>
                       </td>
                       <td class="progress-table__time">
                         <%= proj&.submitted_at&.strftime("%b %d, %H:%M") || "—" %>
+                      </td>
+                      <td class="progress-table__time">
+                        <%= proj ? proj.time_spent_display(raw_assignment) : "—" %>
                       </td>
                       <td>
                         <% if proj&.grade.present? %>
@@ -166,9 +258,10 @@
                 <div class="row assignments-submission-row">
                   <div class="col-12 col-sm-12 col-md-3 col-lg-3 assignments-submission-col-3">
                     <div id="list-tab" role="tablist">
+                      <% raw_assignment = @assignment.is_a?(AssignmentDecorator) ? @assignment.assignment : @assignment %>
                       <ul class="list-group assignments-list-group">
                         <% @assignment.project_order.each do |project| %>
-                          <li><a class="list-group-item list-group-item-action assignments-list-item assignments-username-truncate" id="<%= project.id %>" data-grade="<%= project.grade_str %>" data-remarks="<%= project.remarks_str %>" data-description="<%= project.description %>" data-rubric-scores='<%= (project.grade&.rubric_scores || {}).to_json.gsub("'", "&#39;") %>'><%= project.author.name %></a></li>
+                          <li><a class="list-group-item list-group-item-action assignments-list-item assignments-username-truncate" id="<%= project.id %>" data-grade="<%= project.grade_str %>" data-remarks="<%= project.remarks_str %>" data-description="<%= project.description %>" data-rubric-scores='<%= (project.grade&.rubric_scores || {}).to_json.gsub("'", "&#39;") %>'><%= project.author.name %><% if project.late_submission?(raw_assignment) %> <span class="progress-badge progress-badge--late ms-1"><%= t("assignments.analytics.late") %></span><% end %></a></li>
                         <% end %>
                       </ul>
                     </div>

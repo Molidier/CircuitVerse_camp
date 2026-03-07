@@ -33,16 +33,24 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h3 class="mb-0"><%= t("groups.show.mentor_name_heading") %></h3>
   <% if policy(@group).admin_access? %>
-    <button type="button" class="btn primary-button groups-primary-button"
-      data-bs-toggle="modal"
-      data-bs-target="#add-mentor-to-modal"
-      data-action="click->groups#addMentorToGroup">
-      <%= t("groups.show.add_mentors_btn") %>
-    </button>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn primary-button groups-primary-button"
+        data-bs-toggle="modal"
+        data-bs-target="#add-mentor-to-modal"
+        data-action="click->groups#addMentorToGroup">
+        <%= t("groups.show.add_mentors_btn") %>
+      </button>
+      <button type="button" class="btn primary-button groups-primary-button"
+        data-bs-toggle="modal"
+        data-bs-target="#add-ta-to-modal"
+        data-action="click->groups#addTaToGroup">
+        <%= t("groups.show.add_tas_btn") %>
+      </button>
+    </div>
   <% end %>
 </div>
 <hr>
-<% if @group.group_members.mentor.blank? %>
+<% if @group.group_members.teacher.blank? %>
   <span class="null-text"><%= t("groups.show.no_mentors_html") %></span>
 <% end %>
 <div class="row">
@@ -143,6 +151,11 @@
                     <span><%= t("reopen") %></span>
                   <% end %>
                 </div>
+                <div class="groups-assignment-details">
+                  <%= link_to duplicate_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                    <span><%= t("assignments.duplicate.button") %></span>
+                  <% end %>
+                </div>
               <% else %>
                 <div class="groups-assignment-details">
                   <%= link_to edit_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
@@ -150,11 +163,16 @@
                     <span><%= t("edit") %></span>
                   <% end %>
                 </div>
-              <div class="groups-assignment-details">
-                <%= link_to close_group_assignment_path(@group, assignment), class: "mini-button groups-close-mini-button", method: :put do %>
-                  <span><%= t("close") %></span>
-                <% end %>
-              </div>
+                <div class="groups-assignment-details">
+                  <%= link_to duplicate_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                    <span><%= t("assignments.duplicate.button") %></span>
+                  <% end %>
+                </div>
+                <div class="groups-assignment-details">
+                  <%= link_to close_group_assignment_path(@group, assignment), class: "mini-button groups-close-mini-button", method: :put do %>
+                    <span><%= t("close") %></span>
+                  <% end %>
+                </div>
               <% end %>
               <div class="groups-assignment-details">
                 <%= link_to "#", class: "mini-button groups-delete-mini-button", data: { bs_toggle: "modal", bs_target: "#deleteassignmentModal", currentgroup: @group.id, currentassignment: assignment.id } do %>
@@ -166,12 +184,25 @@
               <% project_assignment = assignment.projects.find { |p| p.author_id == current_user.id } %>
                 <% if(assignment.deadline > Time.current) %>
                   <% if project_assignment.nil? %>
-                    <div class="groups-assignment-details">
-                      <%= link_to assignment_start_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
-                        <%= image_tag("svgs/editGroup.svg", alt: "Start Assignment") %>
-                        <span><%= t("groups.show.assignment.start_working_btn") %></span>
-                      <% end %>
-                    </div>
+                    <% if assignment.template_project_id.present? %>
+                      <div class="groups-assignment-details">
+                        <%= link_to assignment_start_path(@group, assignment, start_from: "template"), class: "mini-button groups-reopen-mini-button" do %>
+                          <span><%= t("groups.show.assignment.start_from_template_btn") %></span>
+                        <% end %>
+                      </div>
+                      <div class="groups-assignment-details">
+                        <%= link_to assignment_start_path(@group, assignment, start_from: "blank"), class: "mini-button groups-view-mini-button" do %>
+                          <span><%= t("groups.show.assignment.start_from_blank_btn") %></span>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <div class="groups-assignment-details">
+                        <%= link_to assignment_start_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                          <%= image_tag("svgs/editGroup.svg", alt: "Start Assignment") %>
+                          <span><%= t("groups.show.assignment.start_working_btn") %></span>
+                        <% end %>
+                      </div>
+                    <% end %>
                   <% else %>
                     <div class="groups-assignment-details">
                       <%= link_to user_project_path(current_user, project_assignment), class: "mini-button groups-reopen-mini-button" do %>
@@ -263,12 +294,17 @@
                     <span><%= t("view") %></span>
                   <% end %>
                 </div>
-                <% if policy(@group).admin_access? %>
+                <% if policy(@group).mentor_access? %>
                   <% if AssignmentDecorator.new(assignment).closed? %>
                     <div class="groups-assignment-details">
                       <%= link_to reopen_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
                         <%= image_tag("svgs/reopenAssignment.svg", alt: "Reopen Assignment") %>
                         <span><%= t("reopen") %></span>
+                      <% end %>
+                    </div>
+                    <div class="groups-assignment-details">
+                      <%= link_to duplicate_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                        <span><%= t("assignments.duplicate.button") %></span>
                       <% end %>
                     </div>
                   <% else %>
@@ -279,9 +315,14 @@
                       <% end %>
                     </div>
                     <div class="groups-assignment-details">
+                      <%= link_to duplicate_group_assignment_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                        <span><%= t("assignments.duplicate.button") %></span>
+                      <% end %>
+                    </div>
+                    <div class="groups-assignment-details">
                       <%= link_to close_group_assignment_path(@group, assignment), class: "mini-button groups-close-mini-button", method: :put do %>
                         <span><%= t("close") %></span>
-                    <% end %>
+                      <% end %>
                     </div>
                   <% end %>
                   <div class="groups-assignment-details">
@@ -294,12 +335,25 @@
                   <% project_assignment = assignment.projects.find { |p| p.author_id == current_user.id } %>
                     <% if(assignment.deadline > Time.current) %>
                       <% if project_assignment.nil? %>
-                        <div class="groups-assignment-details">
-                          <%= link_to assignment_start_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
-                            <%= image_tag("svgs/editGroup.svg", alt: "Start Assignment") %>
-                            <span><%= t("groups.show.assignment.start_working_btn") %></span>
-                          <% end %>
-                        </div>
+                        <% if assignment.template_project_id.present? %>
+                          <div class="groups-assignment-details">
+                            <%= link_to assignment_start_path(@group, assignment, start_from: "template"), class: "mini-button groups-reopen-mini-button" do %>
+                              <span><%= t("groups.show.assignment.start_from_template_btn") %></span>
+                            <% end %>
+                          </div>
+                          <div class="groups-assignment-details">
+                            <%= link_to assignment_start_path(@group, assignment, start_from: "blank"), class: "mini-button groups-view-mini-button" do %>
+                              <span><%= t("groups.show.assignment.start_from_blank_btn") %></span>
+                            <% end %>
+                          </div>
+                        <% else %>
+                          <div class="groups-assignment-details">
+                            <%= link_to assignment_start_path(@group, assignment), class: "mini-button groups-reopen-mini-button" do %>
+                              <%= image_tag("svgs/editGroup.svg", alt: "Start Assignment") %>
+                              <span><%= t("groups.show.assignment.start_working_btn") %></span>
+                            <% end %>
+                          </div>
+                        <% end %>
                       <% else %>
                         <div class="groups-assignment-details">
                           <%= link_to user_project_path(current_user, project_assignment), class: "mini-button groups-reopen-mini-button" do %>
@@ -365,6 +419,7 @@
   <%= render partial: "delete_assignment_confirmation_modal" %>
   <%= render partial: "add_member_modal", locals: { group_member: @group_member } %>
   <%= render partial: "add_mentor_modal", locals: { group_member: @group_member } %>
+  <%= render partial: "add_ta_modal", locals: { group_member: @group_member } %>
   <%= render partial: "promote_member_confirmation_modal" %>
 </div>
 

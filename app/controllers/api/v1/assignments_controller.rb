@@ -26,11 +26,12 @@ class Api::V1::AssignmentsController < Api::V1::BaseController
 
   # POST /api/v1/groups/:group_id/assignments
   def create
-    @assignment = @group.assignments.new(assignment_create_params)
-    authorize @assignment, :mentor_access?
+    authorize @group, :mentor_access?
+    @assignment = Assignment.new(assignment_create_params)
     @assignment.status = "open"
     @assignment.deadline = 1.year.from_now if @assignment.deadline.nil?
     @assignment.save!
+    @assignment.groups << @group unless @assignment.groups.include?(@group)
     render json: Api::V1::AssignmentSerializer.new(@assignment, @options), status: :created
   end
 

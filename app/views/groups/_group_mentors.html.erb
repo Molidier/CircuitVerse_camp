@@ -1,4 +1,4 @@
-<% group.group_members.mentor.each do |member| %>
+<% group.group_members.teacher.each do |member| %>
   <div class="<%= membersCardViewerContainer(group) %>">
     <div class="<%= membersCardViewer(group) %>">
       <div class="row">
@@ -12,20 +12,35 @@
           <div class="groups-members-card-name-container">
             <span class="tooltiptext"><%= member.user.name %></span>
             <%= link_to member.user.name, member.user, class: "groups-members-card-name", title: "view profile of #{member.user.name}" %>
+            <% if member.mentor? %>
+              <span class="badge bg-primary ms-1"><%= t("groups.role_mentor") %></span>
+            <% elsif member.ta? %>
+              <span class="badge bg-secondary ms-1"><%= t("groups.role_ta") %></span>
+            <% end %>
           </div>
           <% if policy(group).admin_access? %>
             <p class="groups-members-card-email" title="<%= member.user.email %>"><%= member.user.email %></p>
           <% end %>
         </div>
-        <% if policy(group).admin_access? %>
+        <% if policy(group).admin_access? && group.primary_mentor_id != member.user_id %>
           <div class="group-member-button-container">
             <div class="groups-mentor-card-mini-buttons">
               <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#deletememberModal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-delete-mini-button" do %>
-                <%= image_tag("svgs/deleteGroup.svg", alt: "Remove Member") %>
+                <%= image_tag("svgs/deleteGroup.svg", alt: "Remove") %>
                 <span><%= t("remove") %></span>
               <% end %>
+              <% if member.mentor? %>
+                <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#promote-to-ta-modal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-reopen-mini-button" do %>
+                  <span><%= t("groups.make_ta") %></span>
+                <% end %>
+              <% end %>
+              <% if member.ta? %>
+                <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#promote-member-modal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-reopen-mini-button" do %>
+                  <span><%= t("groups.make_mentor") %></span>
+                <% end %>
+              <% end %>
               <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#demote-member-modal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-reopen-mini-button" do %>
-                <%= image_tag("svgs/editGroup.svg", alt: "Make mentor") %>
+                <%= image_tag("svgs/editGroup.svg", alt: "Make member") %>
                 <span><%= t("groups.make_member") %></span>
               <% end %>
             </div>

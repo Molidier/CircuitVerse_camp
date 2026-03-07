@@ -7,7 +7,8 @@ class Group < ApplicationRecord
   has_many :group_members, dependent: :destroy
   has_many :users, through: :group_members
 
-  has_many :assignments, dependent: :destroy
+  has_many :assignment_groups, dependent: :destroy
+  has_many :assignments, through: :assignment_groups
   has_many :pending_invitations, dependent: :destroy
 
   after_commit :send_creation_mail, on: :create

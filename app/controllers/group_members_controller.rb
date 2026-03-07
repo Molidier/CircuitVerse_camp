@@ -33,8 +33,8 @@ class GroupMembersController < ApplicationController
     authorize dummy, :primary_mentor?
 
     @group = Group.find(group_member_params[:group_id])
-    is_mentor = false
-    is_mentor = group_member_params[:mentor] == "true" if group_member_params[:mentor]
+    is_mentor = group_member_params[:mentor].to_s == "true"
+    is_ta = group_member_params[:ta].to_s == "true"
     group_member_emails = group_member_params[:emails].grep(Devise.email_regexp)
 
     present_members = User.where(id: @group.group_members.pluck(:user_id)).pluck(:email)
@@ -46,7 +46,10 @@ class GroupMembersController < ApplicationController
         PendingInvitation.where(group_id: @group.id, email: email).first_or_create
         # @group.pending_invitations.create(email:email)
       else
-        GroupMember.where(group_id: @group.id, user_id: user.id, mentor: is_mentor).first_or_create
+        gm = GroupMember.find_or_initialize_by(group_id: @group.id, user_id: user.id)
+        gm.mentor = is_mentor
+        gm.ta = is_ta
+        gm.save!
 
         # group_member = @group.group_members.new
         # group_member.user_id = user.id
@@ -111,7 +114,7 @@ class GroupMembersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def group_member_params
-      params.expect(group_member: [:group_id, :user_id, :mentor, { emails: [] }])
+      params.expect(group_member: [:group_id, :user_id, :mentor, :ta, { emails: [] }])
     end
 
     # Using different params for update
@@ -119,7 +122,7 @@ class GroupMembersController < ApplicationController
     # which would allow changing users of arbitrary groups since
     # the check_access happens before the group is changed and passes
     def group_member_update_params
-      params.expect(group_member: [:mentor])
+      params.expect(group_member: [:mentor, :ta])
     end
 
     def check_access

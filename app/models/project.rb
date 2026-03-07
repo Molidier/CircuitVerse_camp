@@ -132,6 +132,45 @@ class Project < ApplicationRecord
     :started
   end
 
+  # True if this project was submitted after the assignment deadline (manual submit after due).
+  def late_submission?(assignment)
+    return false unless project_submission? && submitted_at.present? && assignment.present?
+
+    submitted_at > assignment.deadline
+  end
+
+  # Seconds spent on this assignment project: stored value or derived from timestamps.
+  # For display, use time_spent_display(assignment) which returns a string.
+  def time_spent_seconds_for(assignment)
+    return nil unless assignment_id == assignment.id
+
+    if time_spent_seconds.to_i.positive?
+      time_spent_seconds
+    elsif started_at.blank?
+      nil
+    elsif submitted_at.present?
+      (submitted_at - started_at).to_i
+    else
+      (Time.current - started_at).to_i
+    end
+  end
+
+  # Human-readable time spent (e.g. "2h 15m" or "45m"). Returns "—" when unknown.
+  def time_spent_display(assignment)
+    sec = time_spent_seconds_for(assignment)
+    return "—" if sec.blank? || sec.negative?
+
+    if sec >= 3600
+      h = sec / 3600
+      m = (sec % 3600) / 60
+      m.positive? ? "#{h}h #{m}m" : "#{h}h"
+    elsif sec >= 60
+      "#{sec / 60}m"
+    else
+      "< 1m"
+    end
+  end
+
   def featured?
     project_access_type == "Public" && FeaturedCircuit.exists?(project_id: id)
   end

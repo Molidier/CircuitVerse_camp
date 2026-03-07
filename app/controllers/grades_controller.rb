@@ -74,7 +74,7 @@ class GradesController < ApplicationController
   def import
     file = params[:file]
     unless file.respond_to?(:read)
-      redirect_back fallback_location: group_assignment_path(@assignment.group, @assignment),
+      redirect_back fallback_location: group_assignment_path(@assignment.groups.first, @assignment),
                     alert: t("grades.import.no_file")
       return
     end
@@ -117,7 +117,7 @@ class GradesController < ApplicationController
 
     notice = t("grades.import.result", count: imported, total: csv.size)
     alert = errors.any? ? errors.first(5).join("; ") : nil
-    redirect_back fallback_location: group_assignment_path(@assignment.group, @assignment),
+    redirect_back fallback_location: group_assignment_path(@assignment.groups.first, @assignment),
                   notice: notice,
                   alert: alert
   end

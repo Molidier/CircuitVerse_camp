@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Check that required env vars for Kamal deploy are set.
+# Usage: ./bin/kamal-deploy-check
+# Or: source deploy.env 2>/dev/null; ./bin/kamal-deploy-check
+
+set -e
+missing=()
+
+check() {
+  if [[ -z "${!1}" ]]; then
+    missing+=("$1")
+  fi
+}
+
+check SERVER_IP
+check POSTGRES_URL
+check RAILS_MASTER_KEY
+check SECRET_KEY_BASE
+check RECAPTCHA_SITE_KEY
+check RECAPTCHA_SECRET_KEY
+
+if [[ ${#missing[@]} -gt 0 ]]; then
+  echo "Missing required environment variables for Kamal deploy:"
+  printf '  - %s\n' "${missing[@]}"
+  echo ""
+  echo "Set them in GitHub Actions secrets or in a .env file (see deploy.env.example)."
+  exit 1
+fi
+
+echo "All required Kamal deploy variables are set."
+echo "Optional: TRAEFIK_HOST, AWS_S3_*, BUGSNAG_API_KEY"
+exit 0

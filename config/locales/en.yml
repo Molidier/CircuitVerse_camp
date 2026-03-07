@@ -107,6 +107,11 @@ en:
       almost_x_years:
         one: "1 year" # default was: "almost 1 year"
         other: "%{count} years" # default was: "almost %{count} years"
+  assignment_comments:
+    heading: "Teacher notes"
+    placeholder: "Add a note (visible to mentors only)..."
+    add: "Add note"
+    created: "Note added."
   grades:
     import:
       no_file: "Please select a CSV file to import."

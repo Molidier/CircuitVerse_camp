@@ -7,7 +7,9 @@ class GroupMember < ApplicationRecord
 
   after_commit :send_welcome_email, on: :create
   scope :mentor, -> { where(mentor: true) }
-  scope :member, -> { where(mentor: false) }
+  scope :ta, -> { where(ta: true) }
+  scope :member, -> { where(mentor: false, ta: false) }
+  scope :teacher, -> { where(mentor: true).or(where(ta: true)) }
 
   def send_welcome_email
     GroupMailer.new_member_email(user, group).deliver_later

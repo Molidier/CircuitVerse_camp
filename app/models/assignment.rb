@@ -6,8 +6,13 @@ class Assignment < ApplicationRecord
     in: %w[percent],
     message: "needs to be fixed at 1-100 for passing the grade back to LMS"
   }, if: :lti_integrated?
-  belongs_to :group
+  has_many :assignment_groups, dependent: :destroy
+  has_many :groups, through: :assignment_groups
   has_many :projects, class_name: "Project", dependent: :nullify
+  belongs_to :template_project, class_name: "Project", optional: true
+  has_many :assignment_comments, dependent: :destroy
+
+  attr_accessor :skip_notification_callbacks
 
   after_commit :send_new_assignment_mail, on: :create
   after_commit :set_deadline_job
@@ -21,22 +26,32 @@ class Assignment < ApplicationRecord
   has_noticed_notifications model_name: "NoticedNotification", dependent: :destroy
 
   def notify_recipient
-    group.group_members.each do |group_member|
-      NewAssignmentNotification.with(assignment: self).deliver_later(group_member.user)
+    return if skip_notification_callbacks
+
+    groups.each do |g|
+      g.group_members.each do |group_member|
+        NewAssignmentNotification.with(assignment: self).deliver_later(group_member.user)
+      end
     end
   end
 
   def send_new_assignment_mail
-    group.group_members.each do |group_member|
-      AssignmentMailer.new_assignment_email(group_member.user, self).deliver_later
+    return if skip_notification_callbacks
+
+    groups.each do |g|
+      g.group_members.each do |group_member|
+        AssignmentMailer.new_assignment_email(group_member.user, self).deliver_later
+      end
     end
   end
 
   def send_update_mail
     return unless status != "closed"
 
-    group.group_members.each do |group_member|
-      AssignmentMailer.update_assignment_email(group_member.user, self).deliver_later
+    groups.each do |g|
+      g.group_members.each do |group_member|
+        AssignmentMailer.update_assignment_email(group_member.user, self).deliver_later
+      end
     end
   end
 

@@ -50,6 +50,11 @@
                 <% else %>
                   Due in <%= time_ago_in_words(assignment.deadline) %>
                 <% end %>
+                <% if project.present? %>
+                  <span class="dashboard-time-spent ms-2" title="Time spent on this assignment">
+                    · <%= project.time_spent_display(assignment) %>
+                  </span>
+                <% end %>
               </div>
 
               <span class="progress-badge progress-badge--<%= status %>">
@@ -58,8 +63,12 @@
 
               <div class="dashboard-assignment-actions">
                 <% if status == :not_started && !overdue %>
-                  <%= link_to "Start", assignment_start_path(group, assignment),
-                        class: "mini-button groups-reopen-mini-button" %>
+                  <% if assignment.template_project_id.present? %>
+                    <%= link_to t("groups.show.assignment.start_from_template_btn"), assignment_start_path(group, assignment, start_from: "template"), class: "mini-button groups-reopen-mini-button" %>
+                    <%= link_to t("groups.show.assignment.start_from_blank_btn"), assignment_start_path(group, assignment, start_from: "blank"), class: "mini-button groups-view-mini-button" %>
+                  <% else %>
+                    <%= link_to t("groups.show.assignment.start_working_btn"), assignment_start_path(group, assignment), class: "mini-button groups-reopen-mini-button" %>
+                  <% end %>
                 <% elsif project.present? %>
                   <%= link_to "My Circuit", user_project_path(@user, project),
                         class: "mini-button groups-view-mini-button" %>

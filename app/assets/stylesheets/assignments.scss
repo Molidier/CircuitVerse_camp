@@ -289,6 +289,7 @@ a:not([href]):not([tabindex]) {
   &--started     { background: #fff3cd; color: #856404; }
   &--submitted   { background: #cce5ff; color: #004085; }
   &--graded      { background: #d4edda; color: #155724; }
+  &--late        { background: #f8d7da; color: #721c24; }
 }
 
 // ── Student dashboard ─────────────────────────────────────────────────────────
@@ -334,6 +335,11 @@ a:not([href]):not([tabindex]) {
   font-size: 0.82rem;
   color: #6c757d;
   flex: 0 0 auto;
+}
+
+.dashboard-time-spent {
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 
 .dashboard-assignment-actions {

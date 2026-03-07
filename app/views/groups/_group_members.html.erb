@@ -24,8 +24,11 @@
                 <%= image_tag("svgs/deleteGroup.svg", alt: "Remove Member") %>
                 <span><%= t("remove") %></span>
               <% end %>
+              <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#promote-to-ta-modal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-view-mini-button" do %>
+                <span><%= t("groups.make_ta") %></span>
+              <% end %>
               <%= link_to "#", data: { bs_toggle: "modal", bs_target: "#promote-member-modal", currentgroupmember: GroupMember.find_by(user_id: member.user.id, group_id: group.id).id }, class: "mini-button groups-reopen-mini-button" do %>
-                <%= image_tag("svgs/editGroup.svg", alt: "Make Member") %>
+                <%= image_tag("svgs/editGroup.svg", alt: "Make Mentor") %>
                 <span><%= t("groups.make_mentor") %></span>
               <% end %>
             </div>

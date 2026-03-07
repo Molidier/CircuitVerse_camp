@@ -1,0 +1,90 @@
+<% content_for :title, "My Dashboard – #{@user.name}" %>
+
+<div class="container">
+  <% if notice %>
+    <div class="row" id="alertdiv">
+      <div class="alert alert-success alert-dismissible container text-center">
+        <a href="#" class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+        <h6><%= notice %></h6>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="row center-row mb-3">
+    <div class="col">
+      <h1 class="submain-heading">My Assignment Dashboard</h1>
+      <p class="text-muted">Track your progress across all groups and assignments.</p>
+    </div>
+  </div>
+
+  <% if @groups.empty? %>
+    <div class="text-center mt-5">
+      <p class="text-muted">You haven't joined any groups yet.</p>
+      <p>Ask your teacher for a group invite link to get started.</p>
+    </div>
+  <% else %>
+    <% @groups.each do |group| %>
+      <div class="dashboard-group-card">
+        <div class="dashboard-group-title">
+          <%= image_tag "svgs/viewGroup.svg", alt: "", width: 20 %>
+          <%= link_to group.name, group_path(group) %>
+          <small class="text-muted fw-normal fs-6">– <%= group.primary_mentor.name %></small>
+        </div>
+
+        <% if group.assignments.empty? %>
+          <p class="dashboard-no-assignments">No assignments yet.</p>
+        <% else %>
+          <% group.assignments.each do |assignment| %>
+            <% project = @my_projects[assignment.id] %>
+            <% status  = project ? project.submission_status : :not_started %>
+            <% overdue = assignment.deadline < Time.current %>
+
+            <div class="dashboard-assignment-row">
+              <div class="dashboard-assignment-name">
+                <%= link_to assignment.name, group_assignment_path(group, assignment) %>
+              </div>
+
+              <div class="dashboard-assignment-meta">
+                <% if overdue %>
+                  <span class="text-danger">Closed <%= time_ago_in_words(assignment.deadline) %> ago</span>
+                <% else %>
+                  Due in <%= time_ago_in_words(assignment.deadline) %>
+                <% end %>
+              </div>
+
+              <span class="progress-badge progress-badge--<%= status %>">
+                <%= status.to_s.tr("_", " ").capitalize %>
+              </span>
+
+              <div class="dashboard-assignment-actions">
+                <% if status == :not_started && !overdue %>
+                  <%= link_to "Start", assignment_start_path(group, assignment),
+                        class: "mini-button groups-reopen-mini-button" %>
+                <% elsif project.present? %>
+                  <%= link_to "My Circuit", user_project_path(@user, project),
+                        class: "mini-button groups-view-mini-button" %>
+                <% end %>
+
+                <%# Show grade once deadline has passed and assignment is graded %>
+                <% if assignment.graded? && overdue && project&.grade.present? %>
+                  <span class="ms-2 fw-semibold">
+                    Grade: <%= project.grade.grade %>
+                    <% if project.grade.remarks.present? %>
+                      <small class="text-muted"> – <%= project.grade.remarks %></small>
+                    <% end %>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="row mt-3">
+    <div class="col">
+      <%= link_to "← Back to My Groups", user_groups_path(@user), class: "anchor-text" %>
+    </div>
+  </div>
+</div>

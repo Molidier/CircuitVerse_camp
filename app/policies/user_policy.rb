@@ -12,6 +12,10 @@ UserPolicy = Struct.new(:user, :requested_user) do
     requested_user.id == current_user.id || current_user.admin?
   end
 
+  def dashboard?
+    requested_user.id == current_user.id || current_user.admin?
+  end
+
   def edit?
     current_user && requested_user.id == current_user.id
   end

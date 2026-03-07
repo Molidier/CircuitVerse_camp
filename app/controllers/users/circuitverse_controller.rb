@@ -5,7 +5,7 @@ class Users::CircuitverseController < ApplicationController
 
   include UsersCircuitverseHelper
 
-  before_action :authenticate_user!, only: %i[edit update groups]
+  before_action :authenticate_user!, only: %i[edit update groups dashboard]
   before_action :set_user, except: [:typeahead_educational_institute]
   before_action :remove_previous_profile_picture, only: [:update]
 
@@ -42,6 +42,24 @@ class Users::CircuitverseController < ApplicationController
                          .select("groups.*, COUNT(group_members.id) as group_member_count")
                          .left_outer_joins(:group_members)
                          .group("groups.id")
+  end
+
+  def dashboard
+    @user = authorize @user
+
+    # Groups where the user is a student (non-mentor member)
+    @groups = @user.groups
+                   .joins(:group_members)
+                   .where(group_members: { user_id: @user.id, mentor: false })
+                   .includes(assignments: { projects: :grade })
+
+    # Build a lookup: assignment_id → the current user's project for that assignment
+    @my_projects = {}
+    @groups.each do |group|
+      group.assignments.each do |assignment|
+        @my_projects[assignment.id] = assignment.projects.find { |p| p.author_id == @user.id }
+      end
+    end
   end
 
   private

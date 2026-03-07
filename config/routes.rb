@@ -92,6 +92,7 @@ Rails.application.routes.draw do
     get "/:id/profile/edit", to: "users/circuitverse#edit", as: "profile_edit"
     patch "/:id/update", to: "users/circuitverse#update", as: "profile_update"
     get "/:id/groups", to: "users/circuitverse#groups", as: "user_groups"
+    get "/:id/dashboard", to: "users/circuitverse#dashboard", as: "student_dashboard"
     get "/:id/", to: "users/circuitverse#index", as: "user_projects"
     get "/educational_institute/typeahead/:query" => "users/circuitverse#typeahead_educational_institute"
     get "/:id/notifications", to: "users/noticed_notifications#index", as: "notifications"

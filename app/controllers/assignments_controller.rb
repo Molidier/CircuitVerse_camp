@@ -178,13 +178,33 @@ class AssignmentsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def assignment_create_params
-      params.expect(assignment: %i[name deadline description grading_scale
-                                   restrictions feature_restrictions])
+      p = params.expect(assignment: %i[name deadline description grading_scale
+                                       restrictions feature_restrictions allow_resubmit rubric])
+      normalize_rubric_param(p)
     end
 
     def assignment_update_params
-      params.expect(assignment: %i[name deadline description
-                                   restrictions feature_restrictions])
+      p = params.expect(assignment: %i[name deadline description
+                                       restrictions feature_restrictions allow_resubmit rubric])
+      normalize_rubric_param(p)
+    end
+
+    def normalize_rubric_param(params_hash)
+      # Handle both flat (assignment attributes) and nested (params_hash[:assignment])
+      attrs = params_hash[:assignment] || params_hash
+      return params_hash unless attrs.respond_to?(:[])
+
+      rubric = attrs[:rubric]
+      attrs[:rubric] = parse_rubric(rubric) if rubric.present?
+      params_hash
+    end
+
+    def parse_rubric(rubric)
+      return rubric if rubric.is_a?(Array)
+
+      JSON.parse(rubric.to_s)
+    rescue JSON::ParserError
+      []
     end
 
     def check_access

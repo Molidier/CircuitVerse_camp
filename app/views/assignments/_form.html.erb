@@ -69,6 +69,31 @@
     <div class="restricted-feature-list"> <!-- Operated by script --> </div>
   </div>
 
+  <div id="allow-resubmit-field" class="field mb-3">
+    <label for="assignment_allow_resubmit" class="primary-checkpoint-container">
+      <h6><%= t("assignments.form.allow_resubmit") %></h6>
+      <%= form.check_box :allow_resubmit, id: "assignment_allow_resubmit" %>
+      <div class="primary-checkpoint"></div>
+    </label>
+    <p class="form-text text-muted"><%= t("assignments.form.allow_resubmit_hint") %></p>
+  </div>
+
+  <div id="rubric-field" class="field mb-3">
+    <h6><%= t("assignments.form.rubric_heading") %></h6>
+    <p class="form-text text-muted"><%= t("assignments.form.rubric_hint") %></p>
+    <div id="rubric-rows" class="rubric-rows mb-2">
+      <% (assignment.rubric_criteria.presence || []).each_with_index do |criterion, idx| %>
+        <div class="rubric-row row mb-1" data-index="<%= idx %>">
+          <div class="col-5"><input type="text" class="form-control rubric-name" placeholder="<%= t('assignments.form.criterion_name') %>" value="<%= criterion['name'] %>" /></div>
+          <div class="col-3"><input type="number" class="form-control rubric-max" placeholder="Max" min="0" value="<%= criterion['max_points'] %>" /></div>
+          <div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger rubric-remove"><%= t("assignments.form.remove") %></button></div>
+        </div>
+      <% end %>
+    </div>
+    <button type="button" id="add-rubric-criterion" class="btn btn-outline-secondary btn-sm"><%= t("assignments.form.add_criterion") %></button>
+    <%= form.hidden_field :rubric, id: "assignment_rubric", value: (assignment.rubric_criteria.presence || []).to_json %>
+  </div>
+
   <div class="field mb-3">
     <%= form.submit class: "btn primary-button" %> &nbsp;
     <%= link_to t("back"), :back, class: "anchor-text" %>
@@ -140,7 +165,29 @@
       generateRestrictions();
       generateDate();
       generateFeatureRestrictions();
+      generateRubric();
   }
+  function generateRubric() {
+    var rows = [];
+    $('#rubric-rows .rubric-row').each(function() {
+      var name = $(this).find('.rubric-name').val();
+      var max = parseInt($(this).find('.rubric-max').val(), 10) || 0;
+      if (name && name.trim() !== '') rows.push({ name: name.trim(), max_points: max });
+    });
+    $('#assignment_rubric').val(JSON.stringify(rows));
+  }
+  $(document).ready(function() {
+    var rowTemplate = '<div class="rubric-row row mb-1">' +
+      '<div class="col-5"><input type="text" class="form-control rubric-name" placeholder="<%= t("assignments.form.criterion_name") %>" /></div>' +
+      '<div class="col-3"><input type="number" class="form-control rubric-max" placeholder="Max" min="0" value="0" /></div>' +
+      '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger rubric-remove"><%= t("assignments.form.remove") %></button></div></div>';
+    $('#add-rubric-criterion').on('click', function() {
+      $('#rubric-rows').append(rowTemplate);
+    });
+    $(document).on('click', '.rubric-remove', function() {
+      $(this).closest('.rubric-row').remove();
+    });
+  });
   function generateFeatureRestrictions() {
     let new_feature_restriction = [];
     if ($('#restrict-feature').is(':checked')) {

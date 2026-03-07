@@ -2,7 +2,8 @@
 
 class Grade < ApplicationRecord
   LETTER_MATCH = /^(A|B|C|D|E|F)$/
-  PERCENT_MATCH = /^[0-9][0-9]?$|^100$/
+  # 0–100: one to three digits, no leading zeros except "0"
+  PERCENT_MATCH = /\A(0|100|[1-9]\d?)\z/
 
   belongs_to :project
   belongs_to :grader, class_name: "User", foreign_key: :user_id
@@ -19,14 +20,18 @@ class Grade < ApplicationRecord
               when "no_scale"
                 false
               when "letter"
-                grade&.match(LETTER_MATCH).present?
+                grade_str&.match(LETTER_MATCH).present?
               when "percent"
-                grade&.match(PERCENT_MATCH).present?
+                grade_str&.match(PERCENT_MATCH).present?
               when "custom"
                 true
       end
 
       errors.add(:grade, "Grade does not match scale or assignment cannot be graded") unless valid
+    end
+
+    def grade_str
+      grade.to_s.strip
     end
 
     def assignment_project

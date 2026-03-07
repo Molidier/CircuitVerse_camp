@@ -151,6 +151,15 @@
               </a>
               </p>
           <% end %>
+          <% if @project.assignment_id.present? && policy(@project).author_access? %>
+            <p class="d-block mb-2 text-start w-75">
+              <% if policy(@project).submit? %>
+                <%= button_to t("projects.submit_assignment"), submit_user_project_path(@author, @project), method: :put, class: "btn primary-button" %>
+              <% elsif policy(@project).unsubmit? %>
+                <%= button_to t("projects.unsubmit_assignment"), unsubmit_user_project_path(@author, @project), method: :put, class: "btn secondary-button" %>
+              <% end %>
+            </p>
+          <% end %>
         </div>
       </div>
     </div>

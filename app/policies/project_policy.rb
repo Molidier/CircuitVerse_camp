@@ -82,6 +82,26 @@ class ProjectPolicy < ApplicationPolicy
     project.assignment_id.nil?
   end
 
+  def submit?
+    return false if user.nil? || project.author_id != user.id
+    return false if project.assignment_id.nil?
+
+    assignment = project.assignment
+    assignment.status != "closed" &&
+      assignment.deadline > Time.current &&
+      !project.project_submission?
+  end
+
+  def unsubmit?
+    return false if user.nil? || project.author_id != user.id
+    return false if project.assignment_id.nil? || !project.project_submission?
+
+    assignment = project.assignment
+    assignment.allow_resubmit? &&
+      assignment.status != "closed" &&
+      assignment.deadline > Time.current
+  end
+
   def author_access?
     (user.present? && user.admin?) || project.author_id == (user.present? && user.id)
   end

@@ -13,6 +13,13 @@ en:
       letter: "Letter(A-F)"
       percent: "Percent(1-100)"
       custom: "Custom"
+      allow_resubmit: "Allow resubmit before deadline"
+      allow_resubmit_hint: "Students can unsubmit and edit their work again until the deadline."
+      rubric_heading: "Grading rubric (optional)"
+      rubric_hint: "Add criteria with max points. Teachers can score each criterion when grading."
+      criterion_name: "Criterion name"
+      add_criterion: "Add criterion"
+      remove: "Remove"
     edit:
       edit_assignment: "Edit Assignment"
     new:
@@ -35,6 +42,7 @@ en:
       grades_and_remarks: "Grades & Remarks"
       grade: "Grade"
       remarks: "Remarks"
+      rubric_scores: "Rubric scores"
       grading_scale_percent: "Assignments can be graded with percentage (1-100)"
       grading_scale_letter: "Assignments can be graded with any of letters A/B/C/D/E/F"
       remove: "Remove"

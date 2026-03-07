@@ -60,6 +60,17 @@ class Assignment < ApplicationRecord
     grading_scale != "no_scale"
   end
 
+  # Rubric: array of { "name" => string, "max_points" => number }. Default [].
+  def rubric_criteria
+    return [] if rubric.blank?
+
+    rubric.is_a?(Array) ? rubric : []
+  end
+
+  def rubric_total_max
+    rubric_criteria.sum { |c| c["max_points"].to_i }
+  end
+
   def elements_restricted?
     restrictions != "[]"
   end

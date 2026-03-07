@@ -51,6 +51,12 @@
           <% if policy(@assignment).can_be_graded? %>
             &nbsp;
             <%= link_to t("assignments.assignment_data.export_grades"), grades_to_csv_path(@assignment, format: "csv"), class: "btn primary-button" %>
+            <span class="ms-2">
+              <%= form_with url: grades_import_path(@assignment), method: :post, local: true, multipart: true, class: "d-inline" do |f| %>
+                <%= f.file_field :file, accept: ".csv", class: "d-inline-block w-auto" %>
+                <%= f.submit t("grades.import.button"), class: "btn secondary-button" %>
+              <% end %>
+            </span>
           <% end %>
           &nbsp;
           <%= link_to t("back"), group_path(@group), class: "anchor-text" %>
@@ -162,7 +168,7 @@
                     <div id="list-tab" role="tablist">
                       <ul class="list-group assignments-list-group">
                         <% @assignment.project_order.each do |project| %>
-                          <li><a class="list-group-item list-group-item-action assignments-list-item assignments-username-truncate" id="<%= project.id %>" data-grade="<%= project.grade_str %>" data-remarks="<%= project.remarks_str %>" data-description="<%= project.description %>"><%= project.author.name %></a></li>
+                          <li><a class="list-group-item list-group-item-action assignments-list-item assignments-username-truncate" id="<%= project.id %>" data-grade="<%= project.grade_str %>" data-remarks="<%= project.remarks_str %>" data-description="<%= project.description %>" data-rubric-scores='<%= (project.grade&.rubric_scores || {}).to_json.gsub("'", "&#39;") %>'><%= project.author.name %></a></li>
                         <% end %>
                       </ul>
                     </div>
@@ -200,6 +206,19 @@
                         <%= form.text_field :remarks, id: "assignment-grade-remarks", class: "form-control form-input" %>
                       </div>
                     </div>
+                    <% if @assignment.rubric_criteria.present? %>
+                      <div class="row mt-2">
+                        <div class="col-12">
+                          <h6><%= t("assignments.assignment_data.rubric_scores") %></h6>
+                          <% @assignment.rubric_criteria.each_with_index do |criterion, idx| %>
+                            <div class="rubric-score-row mb-1">
+                              <label class="me-2"><%= criterion["name"] %> (max <%= criterion["max_points"] %>):</label>
+                              <input type="number" name="grade[rubric_scores][<%= idx %>]" class="form-control form-input d-inline-block w-auto rubric-score-input" min="0" max="<%= criterion["max_points"] %>" value="" data-criterion-index="<%= idx %>" />
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
                     <div class="row">
                       <div class="col-12 col-sm-12 col-md-4 col-lg-4">
                         <button name="button" type="submit" id="grade-form-submit" class="btn primary-button mt-4"><%= t("submit") %></button>

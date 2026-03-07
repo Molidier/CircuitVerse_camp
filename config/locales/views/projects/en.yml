@@ -13,6 +13,10 @@ en:
       private: "Private"
       limited_access: "Limited access"
     submitted_cannot_edit: "This assignment has been submitted. You cannot edit it anymore."
+    submitted_success: "Assignment submitted successfully."
+    unsubmitted_success: "Assignment unsubmitted. You can edit and submit again."
+    submit_assignment: "Submit assignment"
+    unsubmit_assignment: "Unsubmit (edit again)"
     edit:
       title: "%{name} - Edit Project"
       main_heading: "Edit Project"

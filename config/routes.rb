@@ -45,6 +45,7 @@ Rails.application.routes.draw do
     post "/", to: "grades#create", as: "grades"
     delete "/", to: "grades#destroy"
     get "/to_csv/:assignment_id", to: "grades#to_csv", as: "grades_to_csv"
+    post "/import/:assignment_id", to: "grades#import", as: "grades_import"
   end
 
   get "/404", to: "errors#not_found"
@@ -159,7 +160,12 @@ Rails.application.routes.draw do
   # get 'simulator/embed_cross/:id', to: 'simulator#embed_cross', as: 'simulator_embed_cross'
 
   resources :users do
-    resources :projects, except: %i[index new]
+    resources :projects, except: %i[index new] do
+      member do
+        put :submit
+        put :unsubmit
+      end
+    end
   end
   resources :collaborations, only: %i[create destroy update]
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_25_100002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,6 +104,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_000001) do
     t.string "lti_consumer_key"
     t.string "lti_shared_secret"
     t.jsonb "feature_restrictions", default: {}
+    t.boolean "allow_resubmit", default: false, null: false
+    t.jsonb "rubric", default: [], null: false
     t.index ["group_id"], name: "index_assignments_on_group_id"
   end
 
@@ -252,6 +254,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_000001) do
     t.bigint "user_id"
     t.bigint "assignment_id"
     t.string "remarks"
+    t.jsonb "rubric_scores", default: {}, null: false
     t.index ["assignment_id"], name: "index_grades_on_assignment_id"
     t.index ["project_id", "assignment_id"], name: "index_grades_on_project_id_and_assignment_id", unique: true
     t.index ["project_id"], name: "index_grades_on_project_id"

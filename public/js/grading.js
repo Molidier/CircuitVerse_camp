@@ -7,6 +7,16 @@ $('.list-group-item-action').on('click', (e) => {
     $('#project-grade').html($(e.currentTarget).attr('data-grade'));
     $('#project-remarks').html($(e.currentTarget).attr('data-remarks'));
     $('#project-grade-error').html('');
+    try {
+        const raw = $(e.currentTarget).attr('data-rubric-scores');
+        const rubricScores = raw ? JSON.parse(raw) : {};
+        $('.rubric-score-input').each(function() {
+            const idx = $(this).data('criterion-index').toString();
+            $(this).val(rubricScores[idx] != null ? rubricScores[idx] : '');
+        });
+    } catch (err) {
+        $('.rubric-score-input').val('');
+    }
 });
 
 $('#grade-form-remove').click((e) => {
@@ -69,6 +79,7 @@ $('#grade-form-submit').click((e) => {
                 $('#project-grade-error').html('');
                 $('#assignment-grade-grade').val('');
                 $('#assignment-grade-remarks').val('');
+                $('.rubric-score-input').val('');
             },
             error: (data) => {
                 $('#project-grade-error').html(`* ${data.responseJSON.error}`);

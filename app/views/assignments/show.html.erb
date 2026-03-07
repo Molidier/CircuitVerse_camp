@@ -56,6 +56,84 @@
           <%= link_to t("back"), group_path(@group), class: "anchor-text" %>
           <br> <br>
           <hr class="assignments-horizontal-rule">
+
+          <%# ── Teacher progress dashboard ───────────────────────────── %>
+          <% if policy(@assignment).mentor_access? && @students.present? %>
+            <h3 class="assignments-submission-heading">Student Progress</h3>
+
+            <%# Summary counters %>
+            <% counts = { not_started: 0, started: 0, submitted: 0, graded: 0 } %>
+            <% @students.each do |student| %>
+              <% proj = @student_projects[student.id] %>
+              <% status = proj ? proj.submission_status : :not_started %>
+              <% counts[status] += 1 %>
+            <% end %>
+
+            <div class="progress-summary-row">
+              <div class="progress-counter progress-counter--not-started">
+                <span class="progress-counter__number"><%= counts[:not_started] %></span>
+                <span class="progress-counter__label">Not Started</span>
+              </div>
+              <div class="progress-counter progress-counter--started">
+                <span class="progress-counter__number"><%= counts[:started] %></span>
+                <span class="progress-counter__label">In Progress</span>
+              </div>
+              <div class="progress-counter progress-counter--submitted">
+                <span class="progress-counter__number"><%= counts[:submitted] %></span>
+                <span class="progress-counter__label">Submitted</span>
+              </div>
+              <div class="progress-counter progress-counter--graded">
+                <span class="progress-counter__number"><%= counts[:graded] %></span>
+                <span class="progress-counter__label">Graded</span>
+              </div>
+            </div>
+
+            <div class="progress-table-wrapper">
+              <table class="table table-borderless progress-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Submitted</th>
+                    <th>Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @students.sort_by(&:name).each do |student| %>
+                    <% proj = @student_projects[student.id] %>
+                    <% status = proj ? proj.submission_status : :not_started %>
+                    <tr>
+                      <td><%= student.name %></td>
+                      <td>
+                        <span class="progress-badge progress-badge--<%= status %>">
+                          <%= status.to_s.tr("_", " ").capitalize %>
+                        </span>
+                      </td>
+                      <td class="progress-table__time">
+                        <%= proj&.started_at&.strftime("%b %d, %H:%M") || "—" %>
+                      </td>
+                      <td class="progress-table__time">
+                        <%= proj&.submitted_at&.strftime("%b %d, %H:%M") || "—" %>
+                      </td>
+                      <td>
+                        <% if proj&.grade.present? %>
+                          <strong><%= proj.grade.grade %></strong>
+                          <% if proj.grade.remarks.present? %>
+                            <small class="text-muted"> – <%= proj.grade.remarks %></small>
+                          <% end %>
+                        <% else %>
+                          <span class="text-muted">—</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+            <hr class="assignments-horizontal-rule">
+          <% end %>
+
           <% if policy(@assignment).mentor_access? %>
           <h3 class="assignments-submission-heading"><%= t("assignments.assignment_data.submissions") %></h3>
             <script>

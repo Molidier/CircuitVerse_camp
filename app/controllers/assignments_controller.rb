@@ -25,6 +25,14 @@ class AssignmentsController < ApplicationController
   def show
     authorize @assignment
     @assignment = AssignmentDecorator.new(@assignment)
+
+    if policy(@assignment).mentor_access?
+      # keyed by author_id so the view can look up each student's project in O(1)
+      @student_projects = @assignment.projects
+                                     .includes(:grade, :author)
+                                     .index_by(&:author_id)
+      @students = @assignment.group.group_members.member.includes(:user).map(&:user)
+    end
   end
 
   def start
@@ -33,6 +41,7 @@ class AssignmentsController < ApplicationController
     @project.name = "#{current_user.name}/#{@assignment.name}"
     @project.assignment_id = @assignment.id
     @project.project_access_type = "Private"
+    @project.started_at = Time.current
     @project.build_project_datum
     @project.save
     redirect_to user_project_path(current_user, @project)

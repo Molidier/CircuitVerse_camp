@@ -51,6 +51,8 @@ class Project < ApplicationRecord
 
   after_update :check_and_remove_featured
 
+  before_save :record_submitted_at, if: -> { project_submission_changed?(to: true) }
+
   before_destroy :purge_circuit_preview
 
   self.per_page = 9
@@ -119,6 +121,17 @@ class Project < ApplicationRecord
     project_access_type == "Public"
   end
 
+  # Returns the student's progress status for an assignment project.
+  # :graded    — teacher has added a grade
+  # :submitted — auto-submitted at deadline (project_submission == true)
+  # :started   — project exists but deadline hasn't passed yet
+  def submission_status
+    return :graded    if grade.present?
+    return :submitted if project_submission?
+
+    :started
+  end
+
   def featured?
     project_access_type == "Public" && FeaturedCircuit.exists?(project_id: id)
   end
@@ -152,6 +165,10 @@ class Project < ApplicationRecord
         :description,
         "contains inappropriate language: #{profanity_filter.matched(description).join(', ')}"
       )
+    end
+
+    def record_submitted_at
+      self.submitted_at ||= Time.current
     end
 
     def check_and_remove_featured

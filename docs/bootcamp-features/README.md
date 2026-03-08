@@ -6,17 +6,28 @@ This document describes **new features** implemented on top of the original [Cir
 
 ## 1. Progress & Analytics
 
-### Time spent
-- **Per project:** Each assignment project tracks **time spent** (e.g. `time_spent_seconds` on `projects`).
-- **Dashboard / assignment views:** Teachers and students can see time-spent data where project/assignment analytics are shown.
+### Time spent and activity
+- **Per project:** Each assignment project tracks **time spent** (e.g. `time_spent_seconds` on `projects`) and **activity timestamps** (e.g. for submission status and last activity).
+- **Dashboard / assignment views:** Teachers and students can see time-spent and activity data where project/assignment analytics are shown.
+
+### Student dashboard
+- **Student dashboard:** Students have a dedicated **dashboard** (e.g. “My Dashboard”) where they see their groups and, for each assignment, progress status (not started / in progress / submitted / graded), overdue indicator, and actions (Start, Start from template/blank, My Circuit, View submission).
+- **Route:** e.g. user dashboard path; accessible from profile/navigation.
+
+### Teacher progress dashboard
+- **Assignment show page:** Teachers see a **progress dashboard** on each assignment: chart of student counts by status (not started, in progress, submitted, graded), list of students with projects, late-submission flags, and links to grade or view work.
 
 ### Charts and late submission
 - **Charts:** Assignment and group dashboards include **progress charts** (e.g. not started / in progress / submitted / graded).
 - **Late submission flag:** Submissions after the deadline can be flagged so teachers see which work was late.
 
+### Manual submit
+- Students **manually submit** their work when ready (Submit button on the project/simulator); submission is required for teachers to grade. No automatic submission at deadline.
+
 ### Where to look
-- `Project` model: `time_spent_seconds` (and any related activity timestamps).
-- Assignment show / dashboard views: charts and tables for student progress and late submissions.
+- `Project` model: `time_spent_seconds`, activity timestamps, submission status.
+- Assignment show: teacher progress dashboard, charts, student table, grading panel.
+- User dashboard: `users/circuitverse/dashboard` (student assignment progress).
 
 ---
 
@@ -37,6 +48,22 @@ This document describes **new features** implemented on top of the original [Cir
 - Teachers can add **comments on an assignment** (e.g. instructions, clarifications) visible to everyone who can see the assignment.
 - **Model:** `AssignmentComment` (assignment_id, user_id, body).
 - **UI:** Comments section on the assignment show page; mentors can create comments.
+
+### Grading rubrics
+- Teachers can add a **grading rubric** to an assignment: optional criteria, each with a name and max points.
+- When grading, teachers can score each criterion (stored as `rubric_scores` on the grade); the rubric appears on the assignment show page in the grading panel.
+- **Model:** `assignments.rubric` (JSON array of `{ "name", "max_points" }`); `grades.rubric_scores` for per-submission scores.
+- **UI:** “Grading rubric (optional)” in the assignment form: add/remove criteria, set max points; grading view shows rubric score inputs per criterion.
+
+### Allow resubmit
+- Per assignment, teachers can enable **Allow resubmit before deadline**: students can then **unsubmit** their work and edit again until the deadline.
+- **Model:** `assignments.allow_resubmit` (boolean).
+- **UI:** Checkbox in the assignment form; students see unsubmit option when the assignment allows it and the deadline has not passed.
+
+### Grade export and bulk import
+- **Export:** Teachers can export grades for an assignment to CSV (e.g. from assignment show or grades).
+- **Import:** Teachers can import grades from a CSV file (e.g. email and grade columns) to bulk-update or create grades for an assignment.
+- **UI:** Export and Import actions on the assignment show page (for mentors/TAs).
 
 ---
 
@@ -95,10 +122,16 @@ A new role **TA (teaching assistant / co-teacher)** sits between **member** and 
 
 | Feature | Summary |
 |--------|----------|
-| **Progress & analytics** | Time spent per project; progress charts; late submission flag. |
+| **Progress & analytics** | Time spent and activity timestamps per project; progress charts; late submission flag. |
+| **Student dashboard** | Dedicated dashboard: groups, assignment status (not started / in progress / submitted / graded), Start or My Circuit. |
+| **Teacher progress dashboard** | On assignment show: chart by status, student list, late flags, grade links. |
+| **Manual submit** | Students submit work via Submit button; required for grading. |
 | **Duplicate assignment** | One-click copy of an assignment (including closed) with new deadline. |
 | **Starter circuit (template)** | Optional template project; students can start from a fork of it. |
 | **Per-assignment comments** | Teachers post comments on an assignment for all viewers. |
+| **Grading rubrics** | Optional rubric (criteria + max points) on assignment; teachers score each criterion when grading. |
+| **Allow resubmit** | Per-assignment option so students can unsubmit and resubmit before the deadline. |
+| **Grade export / bulk import** | Export grades to CSV; import grades from CSV for an assignment. |
 | **Start from template or blank** | When a template exists, students choose “Start from template” or “Start from blank.” |
 | **Multiple groups per assignment** | One assignment can be assigned to many groups; “Also assign to groups” on edit. |
 | **TA / co-teacher role** | TA role with mentor-like assignment/grading rights; Add TAs and role badges in UI. |

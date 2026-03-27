@@ -1,0 +1,86 @@
+[33mcommit 2a8d635dc9c7e3235fa4402d34c8338d5d95bd5c[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: Moldir <azhimukhanbetmoldir@gmail.com>
+Date:   Fri Mar 27 12:51:09 2026 +0500
+
+    chore: commit all changes
+
+[1mdiff --git a/.cursor/rules/no-ide-attribution.mdc b/.cursor/rules/no-ide-attribution.mdc[m
+[1mnew file mode 100644[m
+[1mindex 00000000..88b6723a[m
+[1m--- /dev/null[m
+[1m+++ b/.cursor/rules/no-ide-attribution.mdc[m
+[36m@@ -0,0 +1,10 @@[m
+[32m+[m[32m---[m
+[32m+[m[32mdescription: Do not attribute the project or its features to any IDE or AI tool.[m
+[32m+[m[32mglobs:[m
+[32m+[m[32malwaysApply: true[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m# No IDE or tool attribution[m
+[32m+[m
+[32m+[m[32m- Do **not** add any line or footer that says the project, features, or documentation were "made with Cursor", "built with Cursor", or any other IDE/AI tool.[m
+[32m+[m[32m- Keep README files, docs (including `docs/bootcamp-features/README.md`), and commit messages free of attribution to Cursor or similar tools.[m
+[1mdiff --git a/DEPLOY-DIGITALOCEAN.md b/DEPLOY-DIGITALOCEAN.md[m
+[1mnew file mode 100644[m
+[1mindex 00000000..200abdcc[m
+[1m--- /dev/null[m
+[1m+++ b/DEPLOY-DIGITALOCEAN.md[m
+[36m@@ -0,0 +1,172 @@[m
+[32m+[m[32m# Deploy on DigitalOcean (Option B – Kamal)[m
+[32m+[m
+[32m+[m[32mThis guide covers **DigitalOcean-specific** setup for deploying CircuitVerse with Kamal. For the general deploy flow and GitHub secrets, see [DEPLOY.md](DEPLOY.md).[m
+[32m+[m
+[32m+[m[32m**Quick list of what you do:** [docs/YOUR-DEPLOY-CHECKLIST.md](docs/YOUR-DEPLOY-CHECKLIST.md)[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 1. Create a Droplet[m
+[32m+[m
+[32m+[m[32m1. Log in to [DigitalOcean](https://cloud.digitalocean.com).[m
+[32m+[m[32m2. **Droplets → Create Droplet**.[m
+[32m+[m[32m3. **Image**: **Ubuntu 22.04 LTS** (required for the `ubuntu` user used by Kamal).[m
+[32m+[m[32m4. **Plan**: **Basic**, **2 GB RAM / 1 vCPU** minimum; **4 GB** is better for production.[m
+[32m+[m[32m5. **Region**: Choose one near you or your users.[m
+[32m+[m[32m6. **Authentication**: **SSH key** — add your public key so you can log in as `ubuntu`.[m
+[32m+[m[32m7. **Hostname**: e.g. `circuitverse` (optional).[m
+[32m+[m[32m8. Create the Droplet and note its **public IP** (this is your `SERVER_IP`).[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 2. Prepare the Droplet (run as `ubuntu` over SSH)[m
+[32m+[m
+[32m+[m[32mSSH in: `ssh ubuntu@YOUR_DROPLET_IP`[m
+[32m+[m
+[32m+[m[32m### 2.1 Install Docker[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mcurl -fsSL https://get.docker.com | sh[m
+[32m+[m[32msudo usermod -aG docker ubuntu[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mLog out and SSH back in so the `docker` group applies. Then verify:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdocker run hello-world[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 2.2 Install Redis[m
+[32m+[m
+[32m+[m[32mThe app expects Redis at `redis://172.17.0.1:6379/0` (Docker host). Install Redis on the Droplet and allow connections from containers:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32msudo apt update && sudo apt install -y redis-server[m
+[32m+[m[32msudo sed -i 's/^bind .*/bind 0.0.0.0/' /etc/redis/redis.conf[m
+[32m+[m[32msudo systemctl restart redis-server[m
+[32m+[m[32msudo systemctl enable redis-server[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 2.3 PostgreSQL (choose one)[m
+[32m+[m
+[32m+[m[32m**Option A – Managed Database (recommended)**[m
+[32m+[m
+[32m+[m[32m1. In DigitalOcean: **Databases → Create Database Cluster → PostgreSQL**.[m
+[32m+[m[32m2. Pick a small plan and the same region as your Droplet.[m
+[32m+[m[32m3. Add the Droplet under **Trusted Sources** (or allow the Droplet’s private IP if in the same VPC).[m
+[32m+[m[32m4. After creation, note **host**, **port** (often 25060), **user**, **password**, and **database**.[m
+[32m+[m[32m5. Buil

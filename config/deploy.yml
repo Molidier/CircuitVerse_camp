@@ -53,8 +53,3 @@ accessories:
     image: ghcr.io/circuitverse/yosys2digitaljs-server:master
     host: <%= ENV["SERVER_IP"] %>
     port: 2812
-
-
-healthcheck:
-  port: 3000
-  max_attempts: 8

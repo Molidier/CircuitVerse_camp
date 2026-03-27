@@ -41,10 +41,10 @@ In **Settings → Secrets and variables → Actions**, add (see `deploy.env.exam
 | `SERVER_IP` | Public IP or hostname of your server (e.g. `12.34.56.78` or `circuitverse.yourschool.edu`) |
 | `SSH_PRIVATE_KEY` | Private key for SSH as `ubuntu` (or the user in `config/deploy.yml` → `ssh.user`) so GitHub Actions can run Kamal on the server |
 | `POSTGRES_URL` | Full PostgreSQL URL, e.g. `postgres://user:password@host:5432/circuitverse_production` |
-| `RAILS_MASTER_KEY` | Contents of `config/master.key` (do not commit this file). If you don't have it: run `bundle exec rails secret` and store it somewhere safe, or generate a new key with `rails new dummy && cat dummy/config/master.key` then remove the dummy app. |
+| `RAILS_MASTER_KEY` | Optional for this repo unless you add Rails encrypted credentials later. |
 | `SECRET_KEY_BASE` | Long random string for Rails (e.g. `rails secret`) |
-| `RECAPTCHA_SITE_KEY` | reCAPTCHA site key (can be empty/minimal for a private instance) |
-| `RECAPTCHA_SECRET_KEY` | reCAPTCHA secret key |
+| `RECAPTCHA_SITE_KEY` | Optional; only needed if you enable the reCAPTCHA feature flag. |
+| `RECAPTCHA_SECRET_KEY` | Optional; only needed if you enable the reCAPTCHA feature flag. |
 | `TRAEFIK_HOST` | Domain for the app (e.g. `circuitverse.yourschool.edu`). Used for Traefik and HTTPS. If omitted, defaults to `staging.circuitverse.org` |
 | `AWS_S3_ACCESS_KEY_ID` | If you use S3 for uploads (can be empty if not used) |
 | `AWS_S3_SECRET_ACCESS_KEY` | If you use S3 |

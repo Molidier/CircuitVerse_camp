@@ -46,6 +46,7 @@ ssh:
   user: ubuntu
 
 builder:
+  arch: amd64
   dockerfile: Dockerfile.production
 
 accessories:

@@ -35,10 +35,10 @@ In the repo: **Settings → Secrets and variables → Actions**. Add:
 - [ ] `SERVER_IP` — Droplet public IP
 - [ ] `SSH_PRIVATE_KEY` — full contents of `~/.ssh/circuitverse_deploy` (private key)
 - [ ] `POSTGRES_URL` — connection URL (managed DB with `?sslmode=require` or `postgres://circuitverse:PASSWORD@172.17.0.1:5432/circuitverse_production`)
-- [ ] `RAILS_MASTER_KEY` — from `config/master.key` or generate (see [DEPLOY.md](../DEPLOY.md))
+- [ ] `RAILS_MASTER_KEY` — optional for this repo unless you add encrypted Rails credentials
 - [ ] `SECRET_KEY_BASE` — output of `bundle exec rails secret`
-- [ ] `RECAPTCHA_SITE_KEY` — your key (or placeholder for private use)
-- [ ] `RECAPTCHA_SECRET_KEY` — your key (or placeholder)
+- [ ] `RECAPTCHA_SITE_KEY` — optional, only if you enable reCAPTCHA
+- [ ] `RECAPTCHA_SECRET_KEY` — optional, only if you enable reCAPTCHA
 - [ ] `TRAEFIK_HOST` — (optional) domain pointing to Droplet, for HTTPS
 
 ---

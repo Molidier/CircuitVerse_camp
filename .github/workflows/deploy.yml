@@ -40,7 +40,17 @@ jobs:
           ruby-version: '3.2.0'
 
       - name: Install kamal
-        run: gem install kamal
+        run: gem install kamal --no-document
+
+      - name: Show Kamal version
+        run: kamal version
+
+      - name: Validate required deploy env
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+        run: bash ./bin/kamal-deploy-check
 
       - name: Deploy with kamal
         run: |

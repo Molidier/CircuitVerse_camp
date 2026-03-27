@@ -14,10 +14,7 @@ check() {
 
 check SERVER_IP
 check POSTGRES_URL
-check RAILS_MASTER_KEY
 check SECRET_KEY_BASE
-check RECAPTCHA_SITE_KEY
-check RECAPTCHA_SECRET_KEY
 
 if [[ ${#missing[@]} -gt 0 ]]; then
   echo "Missing required environment variables for Kamal deploy:"
@@ -28,5 +25,5 @@ if [[ ${#missing[@]} -gt 0 ]]; then
 fi
 
 echo "All required Kamal deploy variables are set."
-echo "Optional: TRAEFIK_HOST, AWS_S3_*, BUGSNAG_API_KEY"
+echo "Optional: RAILS_MASTER_KEY, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, TRAEFIK_HOST, AWS_S3_*, BUGSNAG_API_KEY"
 exit 0

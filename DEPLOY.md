@@ -1,6 +1,8 @@
 # Deploy CircuitVerse (Option B – Kamal)
 
-This guide walks you through deploying CircuitVerse to **your own server** using Kamal so students and teachers can use it from any device and location. Work is saved on your server, and you can deploy newer versions by pushing to `master` or triggering the workflow manually.
+This guide walks you through deploying CircuitVerse to **your own server** using Kamal so students and teachers can use it from any device and location.
+
+**Using DigitalOcean?** See **[DEPLOY-DIGITALOCEAN.md](DEPLOY-DIGITALOCEAN.md)** for Droplet setup, Docker/Redis/PostgreSQL, and a step-by-step checklist. Work is saved on your server, and you can deploy newer versions by pushing to `master` or triggering the workflow manually.
 
 ## What you get
 

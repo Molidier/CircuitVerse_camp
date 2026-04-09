@@ -6,8 +6,6 @@ servers:
     hosts:
       - <%= ENV["SERVER_IP"] %>
     cmd: ./bin/rails server -b 0.0.0.0 -p 3000
-    labels:
-      traefik.http.routers.circuitverse-web.rule: Host(`<%= ENV["TRAEFIK_HOST"] || "staging.circuitverse.org" %>`)
     options:
       "add-host": host.docker.internal:host-gateway
   sidekiq:
@@ -23,6 +21,13 @@ registry:
   username: <%= ENV["KAMAL_REGISTRY_USERNAME"] || "circuitverse" %>
   password:
     - KAMAL_GHCR_REGISTRY_PASSWORD
+
+proxy:
+  app_port: 3000
+<% if ENV["TRAEFIK_HOST"] && !ENV["TRAEFIK_HOST"].empty? %>
+  host: <%= ENV["TRAEFIK_HOST"] %>
+  ssl: true
+<% end %>
 
 env:
   clear:

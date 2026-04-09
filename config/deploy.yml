@@ -39,7 +39,7 @@ proxy:
 env:
   clear:
     RAILS_SERVE_STATIC_FILES: true
-    REDIS_URL: 'redis://172.17.0.1:6379/0'
+    REDIS_URL: 'redis://host.docker.internal:6379/0'
     AWS_REGION: 'ap-south-1'
     AWS_REGION_SES: 'ap-south-1'
     CIRCUITVERSE_EMAIL_ID: 'support@circuitverse.org'

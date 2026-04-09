@@ -38,7 +38,7 @@ docker run hello-world
 
 ### 2.2 Install Redis
 
-The app expects Redis at `redis://172.17.0.1:6379/0` (Docker host). Install Redis on the Droplet and allow connections from containers:
+The app expects Redis at `redis://host.docker.internal:6379/0` (Docker host). Install Redis on the Droplet and allow connections from containers:
 
 ```bash
 sudo apt update && sudo apt install -y redis-server

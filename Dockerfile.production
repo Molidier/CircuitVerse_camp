@@ -76,6 +76,8 @@ FROM --platform=$BUILDPLATFORM ruby:3.2.1-slim as app
 COPY --from=builder /usr/src/app /usr/src/app
 COPY --from=simulator_vue_build /output/simulatorvue/ /usr/src/app/public/simulatorvue
 
+LABEL service="circuitverse"
+
 ENV RAILS_ENV=production
 ENV NODE_ENV=production
 ENV BUNDLE_PATH='vendor/bundle'

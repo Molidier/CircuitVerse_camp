@@ -79,7 +79,7 @@ describe "Assignments", type: :system do
     it "is able to close assignment" do
       assignment
       visit group_path(group)
-      click_link "Close"
+      click_link "Close", match: :first
       visit group_path(group)
       expect(page).to have_text("Reopen")
     end
@@ -87,7 +87,7 @@ describe "Assignments", type: :system do
     it "is able to reopen assignment" do
       closed_assignment
       visit group_path(group)
-      click_link "Reopen"
+      click_link "Reopen", match: :first
       visit group_path(group)
       expect(page).to have_text("Close")
     end
@@ -158,14 +158,14 @@ describe "Assignments", type: :system do
     it "is not able to close assignment" do
       assignment
       visit group_path(group)
-      click_link "Close"
+      click_link "Close", match: :first
       expect(page).to have_text("You are not authorized to do the requested operation")
     end
 
     it "is able to reopen assignment" do
       closed_assignment
       visit group_path(group)
-      click_link "Reopen"
+      click_link "Reopen", match: :first
       visit group_path(group)
       expect(page).to have_text("Close")
     end
@@ -179,7 +179,7 @@ describe "Assignments", type: :system do
     it "is able to make assignment project" do
       assignment
       visit group_path(group)
-      click_on "Start Working"
+      click_on "Start Working", match: :first
       expect(page).to have_content("#{member.name}/#{assignment.name}")
     end
   end

@@ -76,6 +76,7 @@ config/public.pem
 .env.*
 !.env.example
 deploy.env
+deploy.local.env
 .eslintcache
 .cursor/
 

@@ -4,7 +4,6 @@ This guide covers **DigitalOcean-specific** setup for deploying CircuitVerse wit
 
 **Quick list of what you do:** [docs/YOUR-DEPLOY-CHECKLIST.md](docs/YOUR-DEPLOY-CHECKLIST.md)
 
-
 ---
 
 ## 1. Create a Droplet

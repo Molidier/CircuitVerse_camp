@@ -36,10 +36,7 @@ jobs:
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
         env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Set Up Ruby

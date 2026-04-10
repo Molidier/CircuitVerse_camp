@@ -15,7 +15,7 @@ The repo is **ready** for DigitalOcean deployment. Follow these steps in order. 
 
 - [ ] Install **Docker** and add `ubuntu` to the `docker` group (log out and back in after).
 - [ ] Install **Redis** and set `bind 0.0.0.0` (see [DEPLOY-DIGITALOCEAN.md](../DEPLOY-DIGITALOCEAN.md#22-install-redis)).
-- [ ] **PostgreSQL**: use Managed DB (no install) **or** install on the Droplet and allow `172.17.0.1` (see doc).
+- [ ] **PostgreSQL**: use Managed DB (no install) **or** install on the Droplet and allow Docker bridge traffic; use `host.docker.internal` in `POSTGRES_URL` (see doc).
 - [ ] Enable **firewall**: `ufw allow 22,80,443` and enable.
 
 ---
@@ -34,7 +34,7 @@ In the repo: **Settings → Secrets and variables → Actions**. Add:
 
 - [ ] `SERVER_IP` — Droplet public IP
 - [ ] `SSH_PRIVATE_KEY` — full contents of `~/.ssh/circuitverse_deploy` (private key)
-- [ ] `POSTGRES_URL` — connection URL (managed DB with `?sslmode=require` or `postgres://circuitverse:PASSWORD@172.17.0.1:5432/circuitverse_production`)
+- [ ] `POSTGRES_URL` — connection URL (managed DB with `?sslmode=require` or `postgres://circuitverse:PASSWORD@host.docker.internal:5432/circuitverse_production`)
 - [ ] `RAILS_MASTER_KEY` — optional for this repo unless you add encrypted Rails credentials
 - [ ] `SECRET_KEY_BASE` — output of `bundle exec rails secret`
 - [ ] `RECAPTCHA_SITE_KEY` — optional, only if you enable reCAPTCHA

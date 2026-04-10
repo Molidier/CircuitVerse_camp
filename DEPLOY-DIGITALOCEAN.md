@@ -70,17 +70,20 @@ sudo -u postgres createdb -O circuitverse circuitverse_production
 sudo -u postgres psql -c "ALTER USER circuitverse PASSWORD 'CHOOSE_A_STRONG_PASSWORD';"
 ```
 
-From app containers, the host is the Docker bridge: `172.17.0.1`. Allow connections from local/Docker:
+From app containers, use `host.docker.internal` to reach services on the Droplet host. Configure PostgreSQL to listen on Docker bridge traffic and allow port `5432` from Docker networks:
 
 ```bash
-sudo -u postgres psql -c "ALTER SYSTEM SET listen_addresses = 'localhost, 172.17.0.1';"
+sudo -u postgres psql -c "ALTER SYSTEM SET listen_addresses = '*';"
+grep -q '^host all all 172.16.0.0/12 scram-sha-256$' /etc/postgresql/*/main/pg_hba.conf || \
+  echo 'host all all 172.16.0.0/12 scram-sha-256' | sudo tee -a /etc/postgresql/*/main/pg_hba.conf
 sudo systemctl restart postgresql
+sudo ufw allow from 172.16.0.0/12 to any port 5432 proto tcp
 ```
 
 Use this as `POSTGRES_URL` (replace with your password):
 
 ```
-postgres://circuitverse:CHOOSE_A_STRONG_PASSWORD@172.17.0.1:5432/circuitverse_production
+postgres://circuitverse:CHOOSE_A_STRONG_PASSWORD@host.docker.internal:5432/circuitverse_production
 ```
 
 ### 2.4 Firewall
@@ -132,7 +135,7 @@ In the repo: **Settings → Secrets and variables → Actions**. Add:
 |--------|----------------------|
 | `SERVER_IP` | Droplet public IP (e.g. `164.92.xxx.xxx`) |
 | `SSH_PRIVATE_KEY` | Full contents of `~/.ssh/circuitverse_deploy` (private key) |
-| `POSTGRES_URL` | Managed DB URL with `?sslmode=require`, or `postgres://circuitverse:PASSWORD@172.17.0.1:5432/circuitverse_production` if Postgres is on the Droplet |
+| `POSTGRES_URL` | Managed DB URL with `?sslmode=require`, or `postgres://circuitverse:PASSWORD@host.docker.internal:5432/circuitverse_production` if Postgres is on the Droplet |
 | `RAILS_MASTER_KEY` | Optional for this repo unless you add Rails encrypted credentials later |
 | `SECRET_KEY_BASE` | Output of `bundle exec rails secret` |
 | `RECAPTCHA_SITE_KEY` | Optional; only needed if you enable reCAPTCHA |
@@ -165,7 +168,7 @@ Without a domain, you can use `http://YOUR_DROPLET_IP:3000` (ensure port 3000 is
 - [ ] Droplet: Ubuntu 22.04, 2 GB+ RAM, SSH key added
 - [ ] Docker installed, `ubuntu` in `docker` group
 - [ ] Redis installed and bound to `0.0.0.0`
-- [ ] PostgreSQL: managed DB or on Droplet; `POSTGRES_URL` uses correct host (managed host or `172.17.0.1`)
+- [ ] PostgreSQL: managed DB or on Droplet; `POSTGRES_URL` uses correct host (managed host or `host.docker.internal`)
 - [ ] UFW: 22, 80, 443 allowed
 - [ ] Deploy SSH key: public on Droplet, private in `SSH_PRIVATE_KEY`
 - [ ] All [DEPLOY.md](DEPLOY.md) secrets set in GitHub

@@ -19,7 +19,7 @@ This guide walks you through deploying CircuitVerse to **your own server** using
 - **Docker** installed. This deploy config reaches host services from containers via `host.docker.internal`.
 - **SSH** access as a user that can run Docker (e.g. `ubuntu`; see `config/deploy.yml` → `ssh.user`)
 - **PostgreSQL** and **Redis** running and reachable from the server:
-  - Option A: Install PostgreSQL and Redis on the same host; use `POSTGRES_URL` and ensure Redis is reachable at `redis://host.docker.internal:6379/0` (or set `REDIS_URL` in `config/deploy.yml` env)
+  - Option A: Install PostgreSQL and Redis on the same host; use `POSTGRES_URL` with `host.docker.internal` for PostgreSQL and ensure Redis is reachable at `redis://host.docker.internal:6379/0`
   - Option B: Use managed Postgres (e.g. AWS RDS, DigitalOcean) and set `POSTGRES_URL`; Redis still needs to be on the server or at the URL you set
 - **Domain** (optional but recommended): a hostname that points to your server’s public IP (e.g. `circuitverse.yourschool.edu`) for HTTPS and Traefik
 
@@ -62,6 +62,7 @@ For a **fork**, the workflow builds your image and pushes to GitHub Container Re
 
 - Create a PostgreSQL database and user for production.
 - Set `POSTGRES_URL` in GitHub secrets to that connection URL.
+- If PostgreSQL is on the same Docker host, use `host.docker.internal` in `POSTGRES_URL`, not `localhost` or `172.17.0.1`.
 - The first deploy will run migrations when the app starts (if you use the default entrypoint that runs migrations).
 
 ---
@@ -112,7 +113,7 @@ If you prefer to deploy from your laptop instead of GitHub Actions:
 
 - **“Permission denied” on SSH**: Check `SSH_PRIVATE_KEY` and that the deploy user (e.g. `ubuntu`) can use Docker.
 - **App not reachable**: Check firewall (80, 443 or 3000), DNS, and that Traefik is running (`kamal traefik details` or SSH and `docker ps`).
-- **DB connection errors**: Check `POSTGRES_URL` and that the server can reach the database (security groups / firewall).
+- **DB connection errors**: Check `POSTGRES_URL` and that the server can reach the database (security groups / firewall). For host-local PostgreSQL, use `host.docker.internal` and allow Docker bridge ranges to reach port `5432`.
 - **Redis**: Default is `redis://host.docker.internal:6379/0`. If Redis is elsewhere, set `REDIS_URL` in `config/deploy.yml` under `env.clear`.
 
 For more on Kamal, see [kamal-deploy.org](https://kamal-deploy.org).

@@ -57,6 +57,31 @@ jobs:
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
         run: bash ./bin/kamal-deploy-check
 
+      - name: Provision persistent JWT keys
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new "ubuntu@$SERVER_IP" 'bash -se' <<'REMOTE'
+            set -eu
+
+            key_dir="$HOME/.config/circuitverse/jwt"
+            umask 077
+            mkdir -p "$key_dir"
+
+            if [ ! -s "$key_dir/private.pem" ] || [ ! -s "$key_dir/public.pem" ]; then
+              tmp_dir="$(mktemp -d)"
+              trap 'rm -rf "$tmp_dir"' EXIT
+
+              openssl genrsa -out "$tmp_dir/private.pem" 2048
+              openssl rsa -in "$tmp_dir/private.pem" -pubout -out "$tmp_dir/public.pem"
+              mv "$tmp_dir/private.pem" "$key_dir/private.pem"
+              mv "$tmp_dir/public.pem" "$key_dir/public.pem"
+            fi
+
+            chmod 600 "$key_dir/private.pem"
+            chmod 644 "$key_dir/public.pem"
+          REMOTE
+
       - name: Write Kamal secrets file
         run: |
           mkdir -p .kamal

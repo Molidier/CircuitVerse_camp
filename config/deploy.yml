@@ -4,6 +4,10 @@ image: <%= ENV["KAMAL_IMAGE"] || "circuitverse/circuitverse" %>
 deploy_timeout: 120
 drain_timeout: 30
 
+volumes:
+  - /home/ubuntu/.config/circuitverse/jwt/private.pem:/usr/src/app/config/private.pem:ro
+  - /home/ubuntu/.config/circuitverse/jwt/public.pem:/usr/src/app/config/public.pem:ro
+
 servers:
   web:
     hosts:

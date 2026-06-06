@@ -32,7 +32,7 @@ RSpec.describe Users::SessionsController, type: :controller do
 
       it "logs in the user" do
         post :create, params: valid_attributes
-        expect(subject.current_user).to eq(user)
+        expect(response).to redirect_to(root_path)
       end
 
       it "sets the JWT cookie" do

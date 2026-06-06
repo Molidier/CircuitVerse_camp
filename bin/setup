@@ -321,7 +321,9 @@ chdir APP_ROOT do
   print_substep "Removing old logs and temporary files..."
   system! 'bin/rails log:clear tmp:clear'
 
-system! 'gem install mailcatcher'
+  local_bin = File.expand_path("~/.local/bin")
+  mkdir_p local_bin
+  system! 'gem', 'install', 'mailcatcher', '--bindir', local_bin
 
   print_section "Final Steps"
 

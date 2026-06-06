@@ -43,6 +43,13 @@
               <% end -%>
             </div>
           </div>
+          <div class="field mb-3 mb-0">
+            <div class="input-group">
+              <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
+                <%= link_to t("users.confirmations.resend_confirmation_instructions"), new_confirmation_path(resource_name), class: "anchor-text" %>
+              <% end -%>
+            </div>
+          </div>
           <% if devise_mapping.rememberable? -%>
             <div class="field mb-3 mb-0">
               <label class="primary-checkpoint-container users-primary-checkpoint mb-0"><h6><%= t("users.sessions.remember_me") %></h6>

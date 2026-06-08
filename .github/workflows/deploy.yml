@@ -115,8 +115,8 @@ jobs:
       - name: Deploy with kamal
         run: |
           kamal lock release
-          kamal accessory boot redis || true
-          kamal accessory exec redis redis-cli ping
+          kamal accessory boot redis
+          kamal accessory exec redis --reuse redis-cli ping
           kamal accessory boot yosys2digitaljs-server || true
           kamal proxy boot || true
           kamal redeploy -vvvv --skip_push

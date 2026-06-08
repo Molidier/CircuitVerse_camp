@@ -55,6 +55,9 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+          TRAEFIK_HOST: ${{ secrets.TRAEFIK_HOST }}
+          AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING }}
+          AZURE_EMAIL_SENDER: ${{ secrets.AZURE_EMAIL_SENDER }}
         run: bash ./bin/kamal-deploy-check
 
       - name: Provision persistent JWT keys
@@ -91,6 +94,8 @@ jobs:
             "RAILS_MASTER_KEY=$RAILS_MASTER_KEY" \
             "AWS_S3_ACCESS_KEY_ID=$AWS_S3_ACCESS_KEY_ID" \
             "AWS_S3_SECRET_ACCESS_KEY=$AWS_S3_SECRET_ACCESS_KEY" \
+            "AZURE_COMMUNICATION_CONNECTION_STRING=$AZURE_COMMUNICATION_CONNECTION_STRING" \
+            "AZURE_EMAIL_SENDER=$AZURE_EMAIL_SENDER" \
             "SECRET_KEY_BASE=$SECRET_KEY_BASE" \
             "RECAPTCHA_SITE_KEY=$RECAPTCHA_SITE_KEY" \
             "RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY" \
@@ -98,6 +103,8 @@ jobs:
         env:
           AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
           AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+          AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING }}
+          AZURE_EMAIL_SENDER: ${{ secrets.AZURE_EMAIL_SENDER }}
           KAMAL_GHCR_REGISTRY_PASSWORD: ${{ github.token }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
@@ -108,6 +115,8 @@ jobs:
       - name: Deploy with kamal
         run: |
           kamal lock release
+          kamal accessory boot redis || true
+          kamal accessory exec redis redis-cli ping
           kamal accessory boot yosys2digitaljs-server || true
           kamal proxy boot || true
           kamal redeploy -vvvv --skip_push
@@ -115,6 +124,8 @@ jobs:
           RAILS_SERVE_STATIC_FILES: true
           AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
           AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+          AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING }}
+          AZURE_EMAIL_SENDER: ${{ secrets.AZURE_EMAIL_SENDER }}
           BUGSNAG_API_KEY: ${{ secrets.BUGSNAG_API_KEY }}
           KAMAL_GHCR_REGISTRY_PASSWORD: ${{ github.token }}
           SERVER_IP: ${{ secrets.SERVER_IP }}

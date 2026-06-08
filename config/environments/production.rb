@@ -76,17 +76,15 @@ Rails.application.configure do
   # Sidekiq for background jobs (preserved from Rails 7)
   config.active_job.queue_adapter = :sidekiq
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # Surface delivery failures so Sidekiq retries confirmation emails.
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_caching = false
 
-  # Mailer settings (preserved from Rails 7)
-  config.action_mailer.default_url_options = { host: "https://circuitverse.org/" }
-  config.action_mailer.asset_host = "https://circuitverse.org"
+  app_host = ENV.fetch("APP_HOST", "texer-ai-circuitverse.app")
+  config.action_mailer.default_url_options = { host: app_host, protocol: "https" }
+  config.action_mailer.asset_host = "https://#{app_host}"
 
-  aws_credentials = Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID_SES'], ENV['AWS_SECRET_ACCESS_KEY_SES'])
-  config.action_mailer.delivery_method = :ses_v2
-  config.action_mailer.ses_v2_settings = { credentials: aws_credentials }
+  config.action_mailer.delivery_method = :azure_communication_email
 
   # Web Push (VAPID) configuration (preserved from Rails 7)
   config.vapid_public_key = ENV["VAPID_PUBLIC_KEY"] || ""

@@ -43,10 +43,9 @@ proxy:
 env:
   clear:
     RAILS_SERVE_STATIC_FILES: true
-    REDIS_URL: 'redis://host.docker.internal:6379/0'
+    REDIS_URL: 'redis://circuitverse-redis:6379/0'
+    APP_HOST: <%= ENV["TRAEFIK_HOST"] || "texer-ai-circuitverse.app" %>
     AWS_REGION: 'ap-south-1'
-    AWS_REGION_SES: 'ap-south-1'
-    CIRCUITVERSE_EMAIL_ID: 'support@circuitverse.org'
     AWS_S3_REGION: 'ap-south-1'
     AWS_S3_BUCKET_NAME: 'circuitverse-images-dev'
   secret:
@@ -54,6 +53,8 @@ env:
     - POSTGRES_URL
     - AWS_S3_ACCESS_KEY_ID
     - AWS_S3_SECRET_ACCESS_KEY
+    - AZURE_COMMUNICATION_CONNECTION_STRING
+    - AZURE_EMAIL_SENDER
     - SECRET_KEY_BASE
     - RECAPTCHA_SITE_KEY
     - RECAPTCHA_SECRET_KEY
@@ -66,6 +67,12 @@ builder:
   dockerfile: Dockerfile.production
 
 accessories:
+  redis:
+    image: redis:7-alpine
+    host: <%= ENV["SERVER_IP"] %>
+    cmd: redis-server --appendonly yes
+    volumes:
+      - circuitverse-redis-data:/data
   yosys2digitaljs-server:
     image: ghcr.io/circuitverse/yosys2digitaljs-server:master
     host: <%= ENV["SERVER_IP"] %>

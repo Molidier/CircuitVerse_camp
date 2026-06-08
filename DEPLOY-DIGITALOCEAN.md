@@ -140,26 +140,32 @@ In the repo: **Settings → Secrets and variables → Actions**. Add:
 | `SECRET_KEY_BASE` | Output of `bundle exec rails secret` |
 | `RECAPTCHA_SITE_KEY` | Optional; only needed if you enable reCAPTCHA |
 | `RECAPTCHA_SECRET_KEY` | Optional; only needed if you enable reCAPTCHA |
-| `TRAEFIK_HOST` | Domain pointing to the Droplet (e.g. `circuitverse.example.com`), or omit to use default |
+| `TRAEFIK_HOST` | Domain pointing to the Droplet (for example, `texer-ai-circuitverse.app`) |
+| `AZURE_COMMUNICATION_CONNECTION_STRING` | Primary connection string from Communication Services → Keys |
+| `AZURE_EMAIL_SENDER` | MailFrom address from the connected Azure email domain |
 
 Optional: `AWS_S3_ACCESS_KEY_ID`, `AWS_S3_SECRET_ACCESS_KEY`, `BUGSNAG_API_KEY`.
 
+Email is sent through the Azure Communication Services HTTPS API because
+DigitalOcean blocks outbound SMTP ports on Droplets.
+
+Sidekiq uses the private `circuitverse-redis` Redis 7 accessory on Kamal's
+internal Docker network. The Redis port is not published publicly.
+
 ---
 
-## 5. Domain (optional)
+## 5. Domain
 
 - In your DNS provider, add an **A record**: host (e.g. `circuitverse` or `@`) → Droplet **public IP**.
 - Set the GitHub secret **`TRAEFIK_HOST`** to that hostname (e.g. `circuitverse.yourschool.edu`).
 - Traefik will obtain HTTPS via Let’s Encrypt.
-
-Without a domain, you can use `http://YOUR_DROPLET_IP:3000` (ensure port 3000 is not blocked; Traefik may still serve on 80/443 if configured).
 
 ---
 
 ## 6. Deploy
 
 - Push to `master`, or go to **Actions → “Deploy to Server” → Run workflow**.
-- Open **https://&lt;TRAEFIK_HOST&gt;** or **http://&lt;SERVER_IP&gt;:3000**.
+- Open **https://&lt;TRAEFIK_HOST&gt;**.
 
 ---
 
@@ -167,9 +173,9 @@ Without a domain, you can use `http://YOUR_DROPLET_IP:3000` (ensure port 3000 is
 
 - [ ] Droplet: Ubuntu 22.04, 2 GB+ RAM, SSH key added
 - [ ] Docker installed, `ubuntu` in `docker` group
-- [ ] Redis installed and bound to `0.0.0.0`
+- [ ] Redis 7 accessory running on the private Kamal network
 - [ ] PostgreSQL: managed DB or on Droplet; `POSTGRES_URL` uses correct host (managed host or `host.docker.internal`)
 - [ ] UFW: 22, 80, 443 allowed
 - [ ] Deploy SSH key: public on Droplet, private in `SSH_PRIVATE_KEY`
 - [ ] All [DEPLOY.md](DEPLOY.md) secrets set in GitHub
-- [ ] Optional: DNS A record and `TRAEFIK_HOST` set
+- [ ] DNS A record and `TRAEFIK_HOST` set

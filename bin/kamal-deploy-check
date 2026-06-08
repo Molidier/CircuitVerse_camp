@@ -15,6 +15,9 @@ check() {
 check SERVER_IP
 check POSTGRES_URL
 check SECRET_KEY_BASE
+check TRAEFIK_HOST
+check AZURE_COMMUNICATION_CONNECTION_STRING
+check AZURE_EMAIL_SENDER
 
 if [[ ${#missing[@]} -gt 0 ]]; then
   echo "Missing required environment variables for Kamal deploy:"
@@ -31,6 +34,18 @@ if [[ "${POSTGRES_URL}" =~ @(localhost|127\.0\.0\.1|172\.17\.0\.1)(:|/) ]]; then
   exit 1
 fi
 
+if [[ "${AZURE_COMMUNICATION_CONNECTION_STRING}" != *"endpoint=https://"* ||
+      "${AZURE_COMMUNICATION_CONNECTION_STRING}" != *"accesskey="* ]]; then
+  echo "AZURE_COMMUNICATION_CONNECTION_STRING must be the full connection string from"
+  echo "Azure Communication Services > Keys, including endpoint= and accesskey=."
+  exit 1
+fi
+
+if [[ "${AZURE_EMAIL_SENDER}" != *@* ]]; then
+  echo "AZURE_EMAIL_SENDER must be the MailFrom email address from the connected Azure domain."
+  exit 1
+fi
+
 echo "All required Kamal deploy variables are set."
-echo "Optional: RAILS_MASTER_KEY, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, TRAEFIK_HOST, AWS_S3_*, BUGSNAG_API_KEY"
+echo "Optional: RAILS_MASTER_KEY, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, AWS_S3_*, BUGSNAG_API_KEY"
 exit 0

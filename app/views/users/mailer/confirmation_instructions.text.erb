@@ -1,0 +1,12 @@
+Verify your email address
+
+Welcome to TEXER.AI CircuitVerse, <%= @email %>!
+
+Open the link below to verify this email address and activate your account:
+
+<%= confirmation_url(@resource, confirmation_token: @token) %>
+
+After verification, you can log in at:
+<%= new_user_session_url %>
+
+If you did not create this account, you can safely ignore this email.

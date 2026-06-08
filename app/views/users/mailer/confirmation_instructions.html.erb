@@ -1,5 +1,31 @@
-<p><%= t("users.mailer.user_welcome_msg", email: @email) %></p>
+<% confirmation_link = confirmation_url(@resource, confirmation_token: @token) %>
 
-<p><%= t("users.mailer.confirm_account_description") %></p>
+<div class="mailer-container">
+  <h1 class="mailer-heading">Verify your email address</h1>
 
-<p><%= link_to t("users.mailer.link_to_confirm_account"), confirmation_url(@resource, confirmation_token: @token) %></p>
+  <p class="mailer-welcome-text">Welcome to TEXER.AI CircuitVerse, <%= @email %>!</p>
+
+  <p class="mailer-text">
+    Click the button below to verify this email address and activate your account.
+    After verification, you can log in and start using TEXER.AI CircuitVerse.
+  </p>
+
+  <div class="mailer-button-container">
+    <%= link_to "Verify my email", confirmation_link, class: "mailer-button" %>
+  </div>
+
+  <p class="mailer-text">
+    The button securely opens
+    <%= link_to "texer-ai-circuitverse.app", root_url %>
+    and confirms your account automatically.
+  </p>
+
+  <p class="mailer-text">
+    If the button does not work, open this link in your browser:<br>
+    <%= link_to confirmation_link, confirmation_link %>
+  </p>
+
+  <p class="mailer-text">
+    If you did not create this account, you can safely ignore this email.
+  </p>
+</div>
